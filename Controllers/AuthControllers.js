@@ -20,7 +20,7 @@ async function Register(req, res, next) {
         username: username,
         password: CryptrNew.encrypt(password),
         email: email,
-        lastname: "-",
+        create_at: Date.now(),
       };
 
       let createdData = await UsersModels.create(data);
