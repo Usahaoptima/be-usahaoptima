@@ -26,6 +26,9 @@ var Schema = new Mongoose.Schema({
   bussines_id: {
     type: String,
   },
+  create_at: {
+    type: Date,
+  },
 });
 
 const User = Mongoose.model("User", Schema);
