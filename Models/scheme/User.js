@@ -26,6 +26,9 @@ var Schema = new Mongoose.Schema({
   bussines_id: {
     type: String,
   },
+  active: {
+    type: Boolean,
+  },
   create_at: {
     type: Date,
   },

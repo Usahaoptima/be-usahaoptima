@@ -3,7 +3,7 @@ const Cryptr = require("cryptr");
 const CryptrNew = new Cryptr("Ems1");
 
 async function Register(req, res, next) {
-  const { username, password, email } = req.body;
+  const { username, password, email, active } = req.body;
 
   try {
     let getUser = await UsersModels.findOne({
@@ -20,6 +20,7 @@ async function Register(req, res, next) {
         username: username,
         password: CryptrNew.encrypt(password),
         email: email,
+        active: active,
         create_at: Date.now(),
       };
 
