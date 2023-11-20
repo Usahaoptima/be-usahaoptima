@@ -5,12 +5,19 @@ const CryptrNew = new Cryptr("Ems1");
 const JWT = require("jsonwebtoken");
 
 async function Register(req, res, next) {
-  const { username, password, email, active } = req.body;
+  const { username, password, email, active, business_id, role } = req.body;
 
   try {
     let getUser = await UsersModels.findOne({
-      username: username,
+      email: email,
     });
+
+    if ((!username || !password || !email, !active, !business_id)) {
+      res.status(400).send({
+        message: "Field is not complete!",
+        statusCode: 400,
+      });
+    }
 
     if (getUser) {
       res.status(400).send({
@@ -23,6 +30,8 @@ async function Register(req, res, next) {
         password: CryptrNew.encrypt(password),
         email: email,
         active: active,
+        role: role,
+        business_id: business_id,
         create_at: Date.now(),
       };
 

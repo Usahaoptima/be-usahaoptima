@@ -22,7 +22,7 @@ var Schema = new Mongoose.Schema({
     enum: ["admin", "karyawan", "bendahara"],
     default: "karyawan",
   },
-  bussines_id: {
+  business_id: {
     type: String,
   },
   active: {
