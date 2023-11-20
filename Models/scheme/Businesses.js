@@ -11,6 +11,10 @@ var Schema = new Mongoose.Schema({
     enum: ["jasa", "barang"],
     default: "jasa",
   },
+  business_description: {
+    type: String,
+    required: true,
+  },
   create_at: {
     type: Date,
   },

@@ -1,4 +1,5 @@
 const UsersModels = require("../Models/scheme/User");
+const BusinessesModels = require("../Models/scheme/Businesses");
 const Cryptr = require("cryptr");
 const CryptrNew = new Cryptr("Ems1");
 const JWT = require("jsonwebtoken");
@@ -109,7 +110,54 @@ async function Login(req, res, next) {
   }
 }
 
+async function RegisterBusiness(req, res, next) {
+  const { business_name, business_type, business_description } = req.body;
+
+  try {
+    let getBusiness = await BusinessesModels.findOne({
+      business_name: business_name,
+    });
+
+    if (getBusiness) {
+      res.status(401).send({
+        message: "Data is exists, please create another one!",
+        statusCode: 401,
+      });
+    } else {
+      let data = {
+        business_name: business_name,
+        business_type: business_type,
+        business_description: business_description,
+        create_at: Date.now(),
+      };
+
+      let createdData = await BusinessesModels.create(data);
+
+      if (!createdData) {
+        res.status(400).send({
+          message: "Cannot Create Business",
+          statusCode: 400,
+        });
+      } else {
+        res.status(201).send({
+          message: "successfull to create data users!",
+          statusCode: 201,
+          data: createdData,
+        });
+      }
+    }
+  } catch (error) {
+    console.log(error);
+    res.status(500).send({
+      message: "Something Wrong",
+      error: error,
+      statusCode: 500,
+    });
+  }
+}
+
 module.exports = {
   Register,
   Login,
+  RegisterBusiness,
 };
