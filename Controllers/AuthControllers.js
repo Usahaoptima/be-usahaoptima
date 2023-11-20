@@ -141,7 +141,8 @@ async function Login(req, res, next) {
               exp: expiredToken,
               data: {
                 user: getUser[0].username,
-                id: getUser[0]._id,
+                user_id: getUser[0]._id,
+                business_id: getUser[0].business_id,
               },
             },
             "Ems1"
@@ -149,7 +150,6 @@ async function Login(req, res, next) {
 
           let dataPassingClient = {
             access_token: createAccessToken, // access token expired 1 day
-            refresh_token: createAccessToken, // refresh token expired 1 month
             expired_date: expiredToken,
             user: getUser[0].username,
             id: getUser[0]._id,
