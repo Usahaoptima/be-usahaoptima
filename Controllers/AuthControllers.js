@@ -8,21 +8,21 @@ async function Register(req, res, next) {
   const { username, password, email, active, business_id, role } = req.body;
 
   try {
-    let getUser = await UsersModels.findOne({
-      email: email,
+    const getUser = await UsersModels.findOne({
+      $or: [{ username: username }, { email: email }],
     });
 
     if ((!username || !password || !email, !active, !business_id)) {
-      res.status(400).send({
-        message: "Field is not complete!",
-        statusCode: 400,
+      res.status(401).send({
+        message: "Data tidak Komplit",
+        statusCode: 401,
       });
     }
 
     if (getUser) {
-      res.status(400).send({
-        message: "Data is exists, please create another one!",
-        statusCode: 400,
+      res.status(401).send({
+        message: "Sudah Ada Data Buat Data Baru",
+        statusCode: 401,
       });
     } else {
       let data = {
@@ -38,13 +38,13 @@ async function Register(req, res, next) {
       let createdData = await UsersModels.create(data);
 
       if (!createdData) {
-        res.status(400).send({
-          message: "wrong username or password",
-          statusCode: 400,
+        res.status(401).send({
+          message: "username atau password salah",
+          statusCode: 401,
         });
       } else {
         res.status(201).send({
-          message: "successfull to create data users!",
+          message: "Berhasil membuat user",
           statusCode: 201,
           data: createdData,
         });
@@ -53,7 +53,7 @@ async function Register(req, res, next) {
   } catch (error) {
     console.log(error);
     res.status(500).send({
-      message: "Something Wrong",
+      message: "ada yang salah",
       error: error,
       statusCode: 500,
     });
@@ -71,46 +71,55 @@ async function Login(req, res, next) {
       },
     ]);
 
+    console.log(getUser);
+
     if (getUser.length < 1) {
       res.status(400).send({
-        message: "Data is not exists!",
-        statusCode: 401,
+        message: "Username atau password belum terdaftar!",
+        statusCode: 400,
       });
     } else {
       let passwordUser = CryptrNew.decrypt(getUser[0].password);
 
       if (password !== passwordUser) {
-        res.status(400).send({
-          message: "Username or Password is wrong!",
+        res.status(401).send({
+          message: "password atau username salah!",
           statusCode: 401,
         });
       } else {
-        let expiredToken = Math.floor(Date.now() / 1000) + 60 * 60;
-        let createAccessToken = JWT.sign(
-          {
-            exp: expiredToken,
-            data: {
-              user: getUser[0].username,
-              id: getUser[0]._id,
+        if (getUser[0].active === false) {
+          res.status(402).send({
+            message: "user tidak aktif silahkan kontak admin untuk diaktifkan!",
+            user_id: getUser[0]._id,
+            statusCode: 402,
+          });
+        } else {
+          let expiredToken = Math.floor(Date.now() / 1000) + 60 * 60;
+          let createAccessToken = JWT.sign(
+            {
+              exp: expiredToken,
+              data: {
+                user: getUser[0].username,
+                id: getUser[0]._id,
+              },
             },
-          },
-          "Ems1"
-        );
+            "Ems1"
+          );
 
-        let dataPassingClient = {
-          access_token: createAccessToken, // access token expired 1 day
-          refresh_token: createAccessToken, // refresh token expired 1 month
-          expired_date: expiredToken,
-          user: getUser[0].username,
-          id: getUser[0]._id,
-        };
+          let dataPassingClient = {
+            access_token: createAccessToken, // access token expired 1 day
+            refresh_token: createAccessToken, // refresh token expired 1 month
+            expired_date: expiredToken,
+            user: getUser[0].username,
+            id: getUser[0]._id,
+          };
 
-        res.status(200).send({
-          message: "Successfull to login user!",
-          statusText: "Successfull to login user!",
-          statusCode: 200,
-          data: dataPassingClient,
-        });
+          res.status(200).send({
+            message: "berhasil login!",
+            statusCode: 200,
+            data: dataPassingClient,
+          });
+        }
       }
     }
   } catch (error) {
