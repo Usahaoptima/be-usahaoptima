@@ -4,7 +4,6 @@ var Schema = new Mongoose.Schema({
   username: {
     type: String,
     required: true,
-    unique: true,
     trim: true,
   },
   password: {
