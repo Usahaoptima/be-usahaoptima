@@ -5,49 +5,90 @@ const CryptrNew = new Cryptr("Ems1");
 const JWT = require("jsonwebtoken");
 
 async function Register(req, res, next) {
-  const { username, password, email, active, business_id, role } = req.body;
+  const {
+    username,
+    password,
+    email,
+    business_name,
+    business_type,
+    business_description,
+  } = req.body;
 
   try {
     const getUser = await UsersModels.findOne({
       $or: [{ username: username }, { email: email }],
     });
 
-    if ((!username || !password || !email, !active, !business_id)) {
+    let getBusiness = await BusinessesModels.findOne({
+      business_name: business_name,
+    });
+
+    if (
+      !username ||
+      !password ||
+      !email ||
+      !business_name ||
+      !business_type ||
+      !business_description
+    ) {
       res.status(401).send({
         message: "Data tidak Komplit",
         statusCode: 401,
       });
     }
 
-    if (getUser) {
+    if (getBusiness) {
       res.status(401).send({
-        message: "Sudah Ada Data Buat Data Baru",
+        message: "Usahama Sudah Tersedia, Buat Usaha Baru!",
         statusCode: 401,
       });
     } else {
-      let data = {
-        username: username,
-        password: CryptrNew.encrypt(password),
-        email: email,
-        active: active,
-        role: role,
-        business_id: business_id,
+      let dataBusiness = {
+        business_name: business_name,
+        business_type: business_type,
+        business_description: business_description,
         create_at: Date.now(),
       };
 
-      let createdData = await UsersModels.create(data);
+      let createdDataBusiness = await BusinessesModels.create(dataBusiness);
 
-      if (!createdData) {
+      if (!createdDataBusiness) {
+        res.status(400).send({
+          message: "tidak bisa membuat usaha",
+          statusCode: 400,
+        });
+      }
+
+      if (getUser) {
         res.status(401).send({
-          message: "username atau password salah",
+          message: "Akun Sudah Tersedia, Buat akun baru!",
           statusCode: 401,
         });
       } else {
-        res.status(201).send({
-          message: "Berhasil membuat user",
-          statusCode: 201,
-          data: createdData,
-        });
+        let data = {
+          username: username,
+          password: CryptrNew.encrypt(password),
+          email: email,
+          active: false,
+          role: "admin",
+          business_id: createdDataBusiness._id,
+          create_at: Date.now(),
+        };
+
+        let createdData = await UsersModels.create(data);
+
+        if (!createdData) {
+          res.status(401).send({
+            message: "username atau password salah",
+            statusCode: 401,
+          });
+        } else {
+          res.status(201).send({
+            message: "Berhasil membuat user",
+            statusCode: 201,
+            data: createdData,
+          });
+        }
       }
     }
   } catch (error) {
@@ -128,54 +169,7 @@ async function Login(req, res, next) {
   }
 }
 
-async function RegisterBusiness(req, res, next) {
-  const { business_name, business_type, business_description } = req.body;
-
-  try {
-    let getBusiness = await BusinessesModels.findOne({
-      business_name: business_name,
-    });
-
-    if (getBusiness) {
-      res.status(401).send({
-        message: "Data is exists, please create another one!",
-        statusCode: 401,
-      });
-    } else {
-      let data = {
-        business_name: business_name,
-        business_type: business_type,
-        business_description: business_description,
-        create_at: Date.now(),
-      };
-
-      let createdData = await BusinessesModels.create(data);
-
-      if (!createdData) {
-        res.status(400).send({
-          message: "Cannot Create Business",
-          statusCode: 400,
-        });
-      } else {
-        res.status(201).send({
-          message: "successfull to create data users!",
-          statusCode: 201,
-          data: createdData,
-        });
-      }
-    }
-  } catch (error) {
-    console.log(error);
-    res.status(500).send({
-      message: "Something Wrong",
-      error: error,
-      statusCode: 500,
-    });
-  }
-}
-
 module.exports = {
   Register,
   Login,
-  RegisterBusiness,
 };

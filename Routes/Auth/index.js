@@ -21,8 +21,6 @@ routes.post(
   AuthentificationControllers.Login
 );
 
-routes.post("/register/business", AuthentificationControllers.RegisterBusiness);
-
 routes.get("/", (req, res, next) => {
   res.send("Auth Endpoint");
 });
