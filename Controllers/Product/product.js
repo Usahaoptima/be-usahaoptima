@@ -24,8 +24,12 @@ const CreateProduct = async (req, res, next) => {
       });
     }
   } catch (error) {
-    console.log(error);
-    res.status(400);
+    console.error(error);
+    res.status(500).json({
+      message: "Internal server error",
+      statusText: "Internal server error",
+      statusCode: 500,
+    });
   }
 };
 
@@ -40,8 +44,12 @@ const GetProduct = async (req, res, next) => {
       data: getDataProduct,
     });
   } catch (error) {
-    console.log(error);
-    res.status(400);
+    console.error(error);
+    res.status(500).json({
+      message: "Internal server error",
+      statusText: "Internal server error",
+      statusCode: 500,
+    });
   }
 };
 
