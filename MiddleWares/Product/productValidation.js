@@ -3,7 +3,7 @@ const productValidation = (req, res, next) => {
 
   if (!product_name || !price || !quantity) {
     res.status(400).send({
-      messaage: "Field is not complete!",
+      message: "Field is not complete!",
       statusText: "Field is not complete!",
       statusCode: 400,
     });

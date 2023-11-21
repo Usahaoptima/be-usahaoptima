@@ -1,7 +1,6 @@
 const Mongoose = require("mongoose");
 
 var Schema = new Mongoose.Schema({
-  productId: { type: String },
   product_name: { type: String },
   price: { type: Number },
   quantity: { type: Number },
