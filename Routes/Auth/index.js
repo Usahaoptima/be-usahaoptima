@@ -21,6 +21,8 @@ routes.post(
   AuthentificationControllers.Login
 );
 
+routes.get("/:id/verify/:token", AuthentificationControllers.Verify);
+
 routes.get("/", (req, res, next) => {
   res.send("Auth Endpoint");
 });

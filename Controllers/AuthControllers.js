@@ -1,8 +1,11 @@
 const UsersModels = require("../Models/scheme/User");
 const BusinessesModels = require("../Models/scheme/Businesses");
+const TokenModels = require("../Models/scheme/Token");
+const SendEmail = require("../utils/sendEmail");
 const Cryptr = require("cryptr");
 const CryptrNew = new Cryptr("Ems1");
 const JWT = require("jsonwebtoken");
+const crypto = require("crypto");
 
 async function Register(req, res, next) {
   const {
@@ -39,7 +42,7 @@ async function Register(req, res, next) {
 
     if (getBusiness) {
       res.status(401).send({
-        message: "Usahama Sudah Tersedia, Buat Usaha Baru!",
+        message: "Bisnis/Usaha Sudah Tersedia, Buat Usaha Baru!",
         statusCode: 401,
       });
     } else {
@@ -83,8 +86,21 @@ async function Register(req, res, next) {
             statusCode: 401,
           });
         } else {
+          const token = await new TokenModels({
+            user_id: createdData._id,
+            token: crypto.randomBytes(32).toString("usaha"),
+          }).save();
+
+          const url = `${process.env.BASE_URL}/api/auth/${createdData._id}/verify/${token.token}`;
+
+          await SendEmail(
+            createdData.email,
+            "Verifikasi Akun",
+            `Silahkan verifikasi akun anda <br/> <a href="${url}">Verifikasi</a>`
+          );
+
           res.status(201).send({
-            message: "Berhasil membuat user",
+            message: "Berhasil membuat user, verifikasi email terlebih dahulu",
             statusCode: 201,
             data: createdData,
           });
@@ -127,41 +143,39 @@ async function Login(req, res, next) {
           message: "password atau username salah!",
           statusCode: 401,
         });
-      } else {
-        if (getUser[0].active === false) {
-          res.status(402).send({
-            message: "user tidak aktif silahkan kontak admin untuk diaktifkan!",
-            user_id: getUser[0]._id,
-            statusCode: 402,
-          });
-        } else {
-          let expiredToken = Math.floor(Date.now() / 1000) + 60 * 60;
-          let createAccessToken = JWT.sign(
-            {
-              exp: expiredToken,
-              data: {
-                user: getUser[0].username,
-                user_id: getUser[0]._id,
-                business_id: getUser[0].business_id,
-              },
-            },
-            "Ems1"
-          );
-
-          let dataPassingClient = {
-            access_token: createAccessToken, // access token expired 1 day
-            expired_date: expiredToken,
-            user: getUser[0].username,
-            id: getUser[0]._id,
-          };
-
-          res.status(200).send({
-            message: "berhasil login!",
-            statusCode: 200,
-            data: dataPassingClient,
-          });
-        }
       }
+      if (getUser[0].active === false) {
+        res.status(401).send({
+          message: "user tidak aktif silahkan verifikasi email!",
+          statusCode: 401,
+        });
+      }
+
+      let expiredToken = Math.floor(Date.now() / 1000) + 60 * 60;
+      let createAccessToken = JWT.sign(
+        {
+          exp: expiredToken,
+          data: {
+            user: getUser[0].username,
+            user_id: getUser[0]._id,
+            business_id: getUser[0].business_id,
+          },
+        },
+        "Ems1"
+      );
+
+      let dataPassingClient = {
+        access_token: createAccessToken, // access token expired 1 day
+        expired_date: expiredToken,
+        user: getUser[0].username,
+        id: getUser[0]._id,
+      };
+
+      res.status(200).send({
+        message: "berhasil login!",
+        statusCode: 200,
+        data: dataPassingClient,
+      });
     }
   } catch (error) {
     console.log(error);
@@ -169,7 +183,51 @@ async function Login(req, res, next) {
   }
 }
 
+async function Verify(req, res, next) {
+  const { id, token } = req.params;
+
+  try {
+    const user = await UsersModels.findOne({ _id: id });
+    if (!user) {
+      return res.status(404).send({
+        message: "User Tidak Ditemukan",
+        statusCode: 404,
+      });
+    }
+
+    const tokenData = await TokenModels.findOne({
+      user_id: user._id,
+      token: token,
+    });
+
+    if (!tokenData) {
+      return res.status(404).send({
+        message: "Token Tidak Ditemukan",
+        statusCode: 404,
+      });
+    }
+
+    await UsersModels.findByIdAndUpdate(user._id, {
+      active: true,
+    });
+    await TokenModels.deleteOne({ _id: tokenData._id });
+
+    res.status(200).send({
+      message: "Akun Berhasil Verifikasi, silahkan login",
+      statusCode: 200,
+    });
+  } catch (error) {
+    console.log(error);
+    res.status(400).send({
+      message: "ada yang salah",
+      error: error,
+      statusCode: 400,
+    });
+  }
+}
+
 module.exports = {
   Register,
   Login,
+  Verify,
 };
