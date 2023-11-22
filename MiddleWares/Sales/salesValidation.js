@@ -1,7 +1,7 @@
 const salesValidation = (req, res, next) => {
-  const { sales_name, product_id, quantity, total_price } = req.body;
+  const { sales_name, product_name, quantity, total_price } = req.body;
 
-  if (!sales_name || !product_id || !quantity || !total_price) {
+  if (!sales_name || !product_name || !quantity || !total_price) {
     res.status(400).send({
       message: "Field is not complete!",
       statusText: "Field is not complete!",

@@ -1,26 +1,40 @@
 const SalesModels = require("../../Models/scheme/Sales");
+const Product = require("../../Models/scheme/Product");
+
 const CreateSales = async (req, res, next) => {
-  const { sales_name, product_id, quantity, total_price } = req.body;
+  const { sales_name, product_name, quantity, total_price } = req.body;
 
   try {
-    let createDataPassing = {
+    // Cari ID produk berdasarkan nama produk
+    const product = await Product.findOne({ product_name: product_name });
+
+    if (!product) {
+      return res.status(400).json({
+        message: "Product not found",
+        statusText: "Product not found",
+        statusCode: 400,
+      });
+    }
+
+    const createDataPassing = {
       sales_name: sales_name,
-      product_id: product_id,
+      product_name: product_name,
       quantity: quantity,
       total_price: total_price,
       created_date: new Date(),
       updated_date: new Date(),
     };
 
-    let createData = await SalesModels.create(createDataPassing);
+    const createData = await SalesModels.create(createDataPassing);
 
     if (!createData) {
       res.status(400);
     } else {
-      res.send({
+      res.json({
         message: "Successfull to create data sales",
         statusText: "Successfull to create data sales",
         statusCode: 200,
+        data: createData,
       });
     }
   } catch (error) {
@@ -38,8 +52,8 @@ const GetSales = async (req, res, next) => {
     let getDataSales = await SalesModels.find();
 
     res.send({
-      message: "Successfull to create data sales",
-      statusText: "Successfull to create data sales",
+      message: "Successfull to get data sales",
+      statusText: "Successfull to get data sales",
       statusCode: 200,
       data: getDataSales,
     });
@@ -57,13 +71,13 @@ const UpdateSales = async (req, res, next) => {
   try {
     const { id } = req.params;
     const { sales_name } = req.body;
-    const { product_id } = req.body;
+    const { product_name } = req.body;
     const { quantity } = req.body;
     const { total_price } = req.body;
 
     const updateSalesData = {
       sales_name: sales_name,
-      product_id: product_id,
+      product_name: product_name,
       quantity: quantity,
       total_price: total_price,
       created_date: new Date(),
