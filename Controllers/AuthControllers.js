@@ -6,6 +6,7 @@ const Cryptr = require("cryptr");
 const CryptrNew = new Cryptr("Ems1");
 const JWT = require("jsonwebtoken");
 const crypto = require("crypto");
+require("dotenv").config();
 
 async function Register(req, res, next) {
   const {
@@ -88,15 +89,16 @@ async function Register(req, res, next) {
         } else {
           const token = await new TokenModels({
             user_id: createdData._id,
-            token: crypto.randomBytes(32).toString("usaha"),
+            token: crypto.randomBytes(32).toString("hex"),
           }).save();
 
-          const url = `${process.env.BASE_URL}/api/auth/${createdData._id}/verify/${token.token}`;
+          const url = `${process.env.BASE_URL}/user/${createdData._id}/verify/${token.token}`;
 
           await SendEmail(
             createdData.email,
             "Verifikasi Akun",
-            `Silahkan verifikasi akun anda <br/> <a href="${url}">Verifikasi</a>`
+            "Silahkan verifikasi akun anda",
+            `<br/> <a href="${url}">Verifikasi</a>`
           );
 
           res.status(201).send({
