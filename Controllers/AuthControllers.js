@@ -92,7 +92,7 @@ async function Register(req, res, next) {
             token: crypto.randomBytes(32).toString("hex"),
           }).save();
 
-          const url = `${process.env.BASE_URL}/user/${createdData._id}/verify/${token.token}`;
+          const url = `${process.env.BASE_URL}user/${createdData._id}/verify/${token.token}`;
 
           await SendEmail(
             createdData.email,
