@@ -5,6 +5,7 @@ const routes = express.Router();
 const AuthentificationRoutes = require("./Auth/index");
 const ProductRoutes = require("./Product/index");
 const SalesRoutes = require("./Sales/index");
+const UsersRoutes = require("./Users/index");
 
 routes.get("/", (req, res) => {
   res.send("Welcome to api v1 routes!");
@@ -13,5 +14,6 @@ routes.get("/", (req, res) => {
 routes.use("/auth", AuthentificationRoutes);
 routes.use("/product", ProductRoutes);
 routes.use("/sales", SalesRoutes);
+routes.use("/users", UsersRoutes);
 
 module.exports = routes;
