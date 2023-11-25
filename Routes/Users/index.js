@@ -10,4 +10,10 @@ routes.get(
   UsersController.getUsers
 );
 
+routes.post(
+  "/",
+  [UserMiddlewares.verifyToken, UserMiddlewares.verifyJWTToken],
+  UsersController.userPost
+);
+
 module.exports = routes;
