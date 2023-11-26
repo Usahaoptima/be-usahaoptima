@@ -1,6 +1,4 @@
 const UserModels = require("../../Models/scheme/User");
-const TokenModels = require("../../Models/scheme/Token");
-const crypto = require("crypto");
 require("dotenv").config();
 const Cryptr = require("cryptr");
 const CryptrNew = new Cryptr("Ems1");
@@ -64,22 +62,8 @@ async function userPost(req, res, next) {
           statusCode: 401,
         });
       }
-      const token = await new TokenModels({
-        user_id: createdData._id,
-        token: crypto.randomBytes(32).toString("hex"),
-      }).save();
-
-      const url = `${process.env.BASE_URL}user/${createdData._id}/password/${token.token}`;
-
-      await SendEmail(
-        createdData.email,
-        "Verifikasi Akun",
-        "Silahkan verifikasi akun anda",
-        `<br/> <a href="${url}">Verifikasi</a>`
-      );
-
       res.status(201).send({
-        message: "Berhasil membuat user, verifikasi email terlebih dahulu",
+        message: "Berhasil membuat user baru",
         statusCode: 201,
         data: createdData,
       });
@@ -94,7 +78,38 @@ async function userPost(req, res, next) {
   }
 }
 
+const deleteUser = async (req, res, next) => {
+  try {
+    const { id } = req.params;
+
+    const deleteUser = await UserModels.findByIdAndDelete(id);
+
+    if (!deleteUser) {
+      res.status(404).json({
+        message: "User tidak ditemukan",
+        statusText: "User tidak ditemukan",
+        statusCode: 404,
+      });
+    } else {
+      res.send({
+        message: "Berhasil Menghapus Data",
+        statusText: "Berhasil Menghapus Data",
+        statusCode: 200,
+        data: deleteUser,
+      });
+    }
+  } catch (error) {
+    console.error(error);
+    res.status(500).json({
+      message: "Internal server error",
+      statusText: "Internal server error",
+      statusCode: 500,
+    });
+  }
+};
+
 module.exports = {
   getUsers,
   userPost,
+  deleteUser,
 };
