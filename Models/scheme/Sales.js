@@ -19,6 +19,17 @@ Schema.pre("save", async function (next) {
       throw new Error("Product not found");
     }
 
+    // Periksa apakah stok cukup untuk memenuhi penjualan
+    if (product.quantity < this.quantity) {
+      throw new Error("Insufficient stock");
+    }
+
+    // Kurangi stok produk
+    product.quantity -= this.quantity;
+
+    // Simpan perubahan pada stok produk
+    await product.save();
+
     // Hitung total_price dari harga produk dikalikan dengan quantity
     this.total_price = product.price * this.quantity;
 
@@ -34,27 +45,53 @@ Schema.pre("save", async function (next) {
 
 Schema.pre("findOneAndUpdate", async function (next) {
   try {
-    // Ambil harga produk berdasarkan nama produk
     const Product = Mongoose.model("Product");
-    const product = await Product.findOne({
+
+    // Ambil data penjualan sebelum diperbarui
+    const salesBeforeUpdate = await this.model.findOne(this.getQuery());
+
+    // Ambil data produk berdasarkan nama produk sebelum diperbarui
+    const productBeforeUpdate = await Product.findOne({
+      product_name: salesBeforeUpdate.product_name,
+    });
+
+    if (!productBeforeUpdate) {
+      throw new Error("Product not found");
+    }
+
+    // Kembalikan stok yang sudah dikurangkan sebelumnya
+    productBeforeUpdate.quantity += salesBeforeUpdate.quantity;
+
+    // Simpan perubahan pada stok produk sebelumnya
+    await productBeforeUpdate.save();
+
+    // Ambil data produk setelah diperbarui
+    const productAfterUpdate = await Product.findOne({
       product_name: this._update.product_name,
     });
 
-    if (!product) {
+    if (!productAfterUpdate) {
       throw new Error("Product not found");
     }
 
     // Hitung total_price dari harga produk dikalikan dengan quantity yang diperbarui
-    this._update.total_price = product.price * this._update.quantity;
+    this._update.total_price = productAfterUpdate.price * this._update.quantity;
 
     // Perbarui tanggal pembaruan
     this._update.updated_date = Date.now();
+
+    // Kurangi stok produk setelah diperbarui
+    productAfterUpdate.quantity -= this._update.quantity;
+
+    // Simpan perubahan pada stok produk setelah diperbarui
+    await productAfterUpdate.save();
 
     next();
   } catch (error) {
     next(error);
   }
 });
+
 const Sales = Mongoose.model("Sales", Schema);
 
 module.exports = Sales;
