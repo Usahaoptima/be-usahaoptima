@@ -18,4 +18,10 @@ routes.post(
 
 routes.delete("/:id", UsersController.deleteUser);
 
+routes.put(
+  "/",
+  [UserMiddlewares.verifyToken, UserMiddlewares.verifyJWTToken],
+  UsersController.UpdateUser
+);
+
 module.exports = routes;
