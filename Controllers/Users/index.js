@@ -108,8 +108,54 @@ const deleteUser = async (req, res, next) => {
   }
 };
 
+const UpdateUser = async (req, res, next) => {
+  try {
+    const { username, password, email } = req.body;
+    const tokenJWT = req.tokenUser.data;
+
+    const updateUser = {
+      username: username,
+      email: email,
+    };
+
+    // Cek apakah password yang dikirim tidak null
+    if (password !== null && password !== undefined) {
+      updateUser.password = CryptrNew.encrypt(password);
+    }
+
+    const updatedUserData = await UserModels.findByIdAndUpdate(
+      tokenJWT.user_id,
+      updateUser,
+      { new: true }
+    );
+
+    if (!updatedUserData) {
+      res.status(404).json({
+        message: "User Tidak Ditemukan",
+        statusText: "User Tidak Ditemukan",
+        statusCode: 404,
+      });
+    } else {
+      res.send({
+        message: "Berhasil Mengupdated User",
+        statusText: "Berhasil Mengupdated User",
+        statusCode: 200,
+        data: updatedUserData,
+      });
+    }
+  } catch (error) {
+    console.error(error);
+    res.status(500).json({
+      message: "Kesalahan server",
+      statusText: "Kesalahan server",
+      statusCode: 500,
+    });
+  }
+};
+
 module.exports = {
   getUsers,
   userPost,
   deleteUser,
+  UpdateUser,
 };
