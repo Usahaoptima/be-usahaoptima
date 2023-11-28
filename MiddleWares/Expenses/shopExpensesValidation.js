@@ -1,13 +1,13 @@
 const validateExpensesCreation = (req, res, next) => {
-  const { expenseName, totalCost } = req.body;
+  const { expenseName, cost } = req.body;
 
   // Validasi expenseName
   if (!expenseName || expenseName.trim() === "") {
     return res.status(400).json({ error: "Nama pengeluaran diperlukan." });
   }
 
-  // Validasi totalCost
-  if (!totalCost || isNaN(totalCost) || totalCost < 0) {
+  // Validasi cost
+  if (!cost || isNaN(cost) || cost < 0) {
     return res
       .status(400)
       .json({ error: "Total biaya harus berupa angka positif." });
@@ -17,10 +17,10 @@ const validateExpensesCreation = (req, res, next) => {
 };
 
 const validateExpensesUpdate = (req, res, next) => {
-  const { totalCost } = req.body;
+  const { cost } = req.body;
 
-  // Validasi totalCost
-  if (totalCost !== undefined && (isNaN(totalCost) || totalCost < 0)) {
+  // Validasi cost
+  if (cost !== undefined && (isNaN(cost) || cost < 0)) {
     return res
       .status(400)
       .json({ error: "Total biaya harus berupa angka positif." });
