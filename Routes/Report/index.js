@@ -4,6 +4,8 @@ const routes = express.Router();
 // Controllers
 const ReportControllers = require("../../Controllers/Report/report");
 
+routes.get("/", ReportControllers.getAllDataGrouping);
+
 routes.get("/total-sales", ReportControllers.totalSales);
 
 routes.get("/total-expense", ReportControllers.totalExpense);
