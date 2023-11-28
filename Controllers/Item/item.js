@@ -1,6 +1,6 @@
 const ItemExpenses = require("../../Models/scheme/Item_Expenses");
 
-const CreateItem = async (req, res, next) => {
+const CreateItemExpenses = async (req, res, next) => {
   const { itemName, cost, quantity } = req.body;
 
   try {
@@ -31,14 +31,14 @@ const CreateItem = async (req, res, next) => {
 
     if (!createData) {
       res.status(400).json({
-        message: "Failed to create item data",
-        statusText: "Failed to create item data",
+        message: "Failed to create item expenses data",
+        statusText: "Failed to create item expenses data",
         statusCode: 400,
       });
     } else {
       res.status(200).json({
-        message: "Successfully created item data",
-        statusText: "Successfully created item data",
+        message: "Successfully created item expenses data",
+        statusText: "Successfully created item expenses data",
         statusCode: 200,
         data: createData,
       });
@@ -53,13 +53,13 @@ const CreateItem = async (req, res, next) => {
   }
 };
 
-const GetItems = async (req, res, next) => {
+const GetItemsExpenses = async (req, res, next) => {
   try {
     const getDataItems = await ItemExpenses.find();
 
     res.send({
-      message: "Successfully fetched item data",
-      statusText: "Successfully fetched item data",
+      message: "Successfully fetched item expenses data",
+      statusText: "Successfully fetched item expenses data",
       statusCode: 200,
       data: getDataItems,
     });
@@ -73,7 +73,7 @@ const GetItems = async (req, res, next) => {
   }
 };
 
-const UpdateItem = async (req, res, next) => {
+const UpdateItemExpenses = async (req, res, next) => {
   try {
     const { id } = req.params;
     const { itemName, cost, quantity } = req.body;
@@ -84,7 +84,7 @@ const UpdateItem = async (req, res, next) => {
 
     const newTotalCost = existingItem.total_cost + costDifference;
 
-    const updateItemData = {
+    const updateItemExpensesData = {
       item_name: itemName,
       cost: cost,
       quantity: quantity,
@@ -92,18 +92,18 @@ const UpdateItem = async (req, res, next) => {
       updated_date: new Date().toISOString(),
     };
 
-    const updateItem = await ItemExpenses.findByIdAndUpdate(
+    const updateItemExpenses = await ItemExpenses.findByIdAndUpdate(
       id,
-      updateItemData,
+      updateItemExpensesData,
       {
         new: true,
       }
     );
 
-    if (!updateItem) {
+    if (!updateItemExpenses) {
       res.status(404).json({
-        message: "ItemExpenses not found",
-        statusText: "ItemExpenses not found",
+        message: "Item expenses not found",
+        statusText: "Item expenses not found",
         statusCode: 404,
       });
     } else {
@@ -111,7 +111,7 @@ const UpdateItem = async (req, res, next) => {
         message: "Successfully updated item data",
         statusText: "Successfully updated item data",
         statusCode: 200,
-        data: updateItem,
+        data: updateItemExpenses,
       });
     }
   } catch (error) {
@@ -124,24 +124,24 @@ const UpdateItem = async (req, res, next) => {
   }
 };
 
-const DeleteItem = async (req, res, next) => {
+const DeleteItemExpenses = async (req, res, next) => {
   try {
     const { id } = req.params;
 
-    const deleteItemData = await ItemExpenses.findByIdAndDelete(id);
+    const deleteItemExpensesData = await ItemExpenses.findByIdAndDelete(id);
 
-    if (!deleteItemData) {
+    if (!deleteItemExpensesData) {
       res.status(404).json({
-        message: "ItemExpenses not found",
-        statusText: "ItemExpenses not found",
+        message: "Item expenses not found",
+        statusText: "Item expenses not found",
         statusCode: 404,
       });
     } else {
       res.send({
-        message: "Successfully deleted item data",
-        statusText: "Successfully deleted item data",
+        message: "Successfully deleted item expenses data",
+        statusText: "Successfully deleted item expenses data",
         statusCode: 200,
-        data: deleteItemData,
+        data: deleteItemExpensesData,
       });
     }
   } catch (error) {
@@ -154,22 +154,9 @@ const DeleteItem = async (req, res, next) => {
   }
 };
 
-const calculateTotalCost = async () => {
-  const totalCosts = await ItemExpenses.aggregate([
-    {
-      $group: {
-        _id: null,
-        total: { $sum: "$cost" },
-      },
-    },
-  ]);
-
-  return totalCosts.length > 0 ? totalCosts[0].total : 0;
-};
-
 module.exports = {
-  CreateItem,
-  GetItems,
-  UpdateItem,
-  DeleteItem,
+  CreateItemExpenses,
+  GetItemsExpenses,
+  UpdateItemExpenses,
+  DeleteItemExpenses,
 };

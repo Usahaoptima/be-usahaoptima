@@ -126,8 +126,8 @@ const updateStaffExpenses = async (req, res, next) => {
 
     if (!updateStaffExpensesItem) {
       res.status(404).json({
-        message: "StaffExpenses expenses not found",
-        statusText: "StaffExpenses expenses not found",
+        message: "Staff expenses not found",
+        statusText: "Staff expenses not found",
         statusCode: 404,
       });
     } else {
@@ -156,8 +156,8 @@ const deleteStaffExpenses = async (req, res, next) => {
 
     if (!deleteStaffExpensesData) {
       res.status(404).json({
-        message: "StaffExpenses expenses not found",
-        statusText: "StaffExpenses expenses not found",
+        message: "Staff expenses not found",
+        statusText: "Staff expenses not found",
         statusCode: 404,
       });
     } else {
