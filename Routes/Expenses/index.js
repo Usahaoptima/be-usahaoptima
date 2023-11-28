@@ -5,7 +5,7 @@ const router = express.Router();
 const ExpensesController = require("../../Controllers/Expenses/expenses");
 
 // Middleware
-const ExpensesMiddleware = require("../../MiddleWares/Expenses/expensesValidation");
+const ExpensesMiddleware = require("../../MiddleWares/Expenses/shopExpensesValidation");
 
 router.post(
   "/",

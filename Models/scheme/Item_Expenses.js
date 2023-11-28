@@ -4,8 +4,9 @@ const Mongoose = require("mongoose");
 const itemSchema = new Mongoose.Schema({
   // no: { type: Number },
   item_name: { type: String },
-  total_cost: { type: Number },
+  cost: { type: Number },
   quantity: { type: Number },
+  total_cost: { type: Number },
   created_date: { type: Date },
   updated_date: { type: String },
 });

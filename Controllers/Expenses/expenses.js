@@ -1,13 +1,28 @@
-const Expenses = require("../../Models/scheme/Expenses");
 const ReportModels = require("../../Models/scheme/Report");
+const Expenses = require("../../Models/scheme/Shop_Expenses");
 
 const createExpenses = async (req, res, next) => {
-  const { expenseName, totalCost } = req.body;
+  const { expenseName, cost } = req.body;
 
   try {
+    // Ambil total_cost dari semua data di database
+    const totalCosts = await Expenses.aggregate([
+      {
+        $group: {
+          _id: null,
+          total: { $sum: "$cost" },
+        },
+      },
+    ]);
+
+    // Set total_cost ke total biaya yang dihitung atau 0 jika tidak ada data
+    const newTotalCost =
+      totalCosts.length > 0 ? totalCosts[0].total + cost : cost;
+
     const createDataPassing = {
       expense_name: expenseName,
-      total_cost: totalCost,
+      cost: cost,
+      total_cost: newTotalCost,
       created_date: new Date(),
       updated_date: new Date().toISOString(),
     };
@@ -69,11 +84,18 @@ const getExpenses = async (req, res, next) => {
 const updateExpenses = async (req, res, next) => {
   try {
     const { id } = req.params;
-    const { expenseName, totalCost } = req.body;
+    const { expenseName, cost } = req.body;
+
+    const existingExpenses = await Expenses.findById(id);
+
+    const costDifference = cost - existingExpenses.cost;
+
+    const newTotalCost = existingExpenses.total_cost + costDifference;
 
     const updateExpensesData = {
       expense_name: expenseName,
-      total_cost: totalCost,
+      cost: cost,
+      total_cost: newTotalCost,
       updated_date: new Date().toISOString(),
     };
 

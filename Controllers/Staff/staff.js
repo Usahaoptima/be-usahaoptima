@@ -1,4 +1,4 @@
-const Staff = require("../../Models/scheme/Staff");
+const Staff = require("../../Models/scheme/Staff_Expenses");
 
 const CreateStaff = async (req, res, next) => {
   const { staffName, salary, phoneNumber, email } = req.body;

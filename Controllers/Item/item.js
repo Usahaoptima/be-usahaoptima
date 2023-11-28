@@ -1,4 +1,4 @@
-const Item = require("../../Models/scheme/Item");
+const Item = require("../../Models/scheme/Item_Expenses");
 
 const CreateItem = async (req, res, next) => {
   const { itemName, totalCost, quantity } = req.body;
