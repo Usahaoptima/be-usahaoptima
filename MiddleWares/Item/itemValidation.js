@@ -1,13 +1,13 @@
 const validateItemCreation = (req, res, next) => {
-  const { itemName, totalCost, quantity } = req.body;
+  const { itemName, cost, quantity } = req.body;
 
   // Validasi itemName
   if (!itemName || itemName.trim() === "") {
     return res.status(400).json({ error: "Nama item diperlukan." });
   }
 
-  // Validasi totalCost
-  if (!totalCost || isNaN(totalCost) || totalCost < 0) {
+  // Validasi cost
+  if (!cost || isNaN(cost) || cost < 0) {
     return res
       .status(400)
       .json({ error: "Harga item harus berupa angka positif." });
@@ -24,10 +24,10 @@ const validateItemCreation = (req, res, next) => {
 };
 
 const validateItemUpdate = (req, res, next) => {
-  const { totalCost, quantity } = req.body;
+  const { cost, quantity } = req.body;
 
-  // Validasi totalCost
-  if (totalCost !== undefined && (isNaN(totalCost) || totalCost < 0)) {
+  // Validasi cost
+  if (cost !== undefined && (isNaN(cost) || cost < 0)) {
     return res
       .status(400)
       .json({ error: "Harga item harus berupa angka positif." });
