@@ -1,11 +1,11 @@
-const Item = require("../../Models/scheme/Item_Expenses");
+const ItemExpenses = require("../../Models/scheme/Item_Expenses");
 
 const CreateItem = async (req, res, next) => {
   const { itemName, cost, quantity } = req.body;
 
   try {
     // Ambil total_cost dari semua data di database
-    const totalCosts = await Item.aggregate([
+    const totalCosts = await ItemExpenses.aggregate([
       {
         $group: {
           _id: null,
@@ -27,7 +27,7 @@ const CreateItem = async (req, res, next) => {
       updated_date: new Date().toISOString(),
     };
 
-    const createData = await Item.create(createDataPassing);
+    const createData = await ItemExpenses.create(createDataPassing);
 
     if (!createData) {
       res.status(400).json({
@@ -55,7 +55,7 @@ const CreateItem = async (req, res, next) => {
 
 const GetItems = async (req, res, next) => {
   try {
-    const getDataItems = await Item.find();
+    const getDataItems = await ItemExpenses.find();
 
     res.send({
       message: "Successfully fetched item data",
@@ -78,7 +78,7 @@ const UpdateItem = async (req, res, next) => {
     const { id } = req.params;
     const { itemName, cost, quantity } = req.body;
 
-    const existingItem = await Item.findById(id);
+    const existingItem = await ItemExpenses.findById(id);
 
     const costDifference = cost - existingItem.cost;
 
@@ -92,14 +92,18 @@ const UpdateItem = async (req, res, next) => {
       updated_date: new Date().toISOString(),
     };
 
-    const updateItem = await Item.findByIdAndUpdate(id, updateItemData, {
-      new: true,
-    });
+    const updateItem = await ItemExpenses.findByIdAndUpdate(
+      id,
+      updateItemData,
+      {
+        new: true,
+      }
+    );
 
     if (!updateItem) {
       res.status(404).json({
-        message: "Item not found",
-        statusText: "Item not found",
+        message: "ItemExpenses not found",
+        statusText: "ItemExpenses not found",
         statusCode: 404,
       });
     } else {
@@ -124,12 +128,12 @@ const DeleteItem = async (req, res, next) => {
   try {
     const { id } = req.params;
 
-    const deleteItemData = await Item.findByIdAndDelete(id);
+    const deleteItemData = await ItemExpenses.findByIdAndDelete(id);
 
     if (!deleteItemData) {
       res.status(404).json({
-        message: "Item not found",
-        statusText: "Item not found",
+        message: "ItemExpenses not found",
+        statusText: "ItemExpenses not found",
         statusCode: 404,
       });
     } else {
@@ -151,7 +155,7 @@ const DeleteItem = async (req, res, next) => {
 };
 
 const calculateTotalCost = async () => {
-  const totalCosts = await Item.aggregate([
+  const totalCosts = await ItemExpenses.aggregate([
     {
       $group: {
         _id: null,
