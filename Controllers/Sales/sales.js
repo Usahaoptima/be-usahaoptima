@@ -1,5 +1,6 @@
 const SalesModels = require("../../Models/scheme/Sales");
 const Product = require("../../Models/scheme/Product");
+const ReportModels = require("../../Models/scheme/Report");
 
 const CreateSales = async (req, res, next) => {
   const { sales_name, product_name, quantity, total_price } = req.body;
@@ -27,7 +28,16 @@ const CreateSales = async (req, res, next) => {
 
     const createData = await SalesModels.create(createDataPassing);
 
-    if (!createData) {
+    const dataToReport = {
+      total_amount: createData.total_price,
+      criteria: "pemasukan",
+      create_at: new Date(),
+      report_id: createData._id,
+    };
+
+    const createReport = await ReportModels.create(dataToReport);
+
+    if (!createData && !createReport) {
       res.status(400);
     } else {
       res.json({
