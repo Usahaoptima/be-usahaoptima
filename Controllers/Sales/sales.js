@@ -28,14 +28,14 @@ const CreateSales = async (req, res, next) => {
 
     const createData = await SalesModels.create(createDataPassing);
 
-    const dataToReport = {
+    const dataReport = {
       total_amount: createData.total_price,
       criteria: "pemasukan",
       create_at: new Date(),
       report_id: createData._id,
     };
 
-    const createReport = await ReportModels.create(dataToReport);
+    const createReport = await ReportModels.create(dataReport);
 
     if (!createData && !createReport) {
       res.status(400);
