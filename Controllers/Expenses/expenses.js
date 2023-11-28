@@ -1,4 +1,5 @@
 const Expenses = require("../../Models/scheme/Expenses");
+const ReportModels = require("../../Models/scheme/Report");
 
 const createExpenses = async (req, res, next) => {
   const { expenseName, totalCost } = req.body;
@@ -12,6 +13,14 @@ const createExpenses = async (req, res, next) => {
     };
 
     const createData = await Expenses.create(createDataPassing);
+    const dataReport = {
+      total_amount: createData.total_cost,
+      criteria: "pengeluaran",
+      create_at: new Date(),
+      report_id: createData._id,
+    };
+
+    const createReport = await ReportModels.create(dataReport);
 
     if (!createData) {
       res.status(400).json({
