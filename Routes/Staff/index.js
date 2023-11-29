@@ -10,14 +10,14 @@ const StaffMiddleware = require("../../MiddleWares/Staff/staffValidation");
 router.post(
   "/",
   StaffMiddleware.validateStaffCreation,
-  StaffController.CreateStaff
+  StaffController.createStaffExpenses
 );
-router.get("/", StaffController.GetStaff);
+router.get("/", StaffController.getStaffExpenses);
 router.put(
   "/:id",
   StaffMiddleware.validateStaffUpdate,
-  StaffController.UpdateStaff
+  StaffController.updateStaffExpenses
 );
-router.delete("/:id", StaffController.DeleteStaff);
+router.delete("/:id", StaffController.deleteStaffExpenses);
 
 module.exports = router;

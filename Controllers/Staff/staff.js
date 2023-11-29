@@ -1,11 +1,11 @@
-const Staff = require("../../Models/scheme/Staff_Expenses");
+const StaffExpenses = require("../../Models/scheme/Staff_Expenses");
 
-const CreateStaff = async (req, res, next) => {
+const createStaffExpenses = async (req, res, next) => {
   const { staffName, salary, phoneNumber, email } = req.body;
 
   try {
     // Cek apakah nomor telepon atau email sudah ada di database
-    const existingStaff = await Staff.findOne({
+    const existingStaff = await StaffExpenses.findOne({
       $or: [{ phone_number: phoneNumber }, { email: email }],
     });
 
@@ -15,28 +15,44 @@ const CreateStaff = async (req, res, next) => {
       });
     }
 
+    // Ambil total_cost dari semua data di database
+    const totalCosts = await StaffExpenses.aggregate([
+      {
+        $group: {
+          _id: null,
+          total: { $sum: "$salary" },
+        },
+      },
+    ]);
+
+    // Set total_cost ke total gaji yang dihitung atau salary jika tidak ada data
+    const newTotalCost =
+      totalCosts.length > 0 ? totalCosts[0].total + salary : salary;
+
     const createDataPassing = {
       staff_name: staffName,
       salary,
       phone_number: phoneNumber,
       email,
+      total_cost: newTotalCost,
       created_date: new Date(),
       updated_date: new Date(),
     };
 
-    const createData = await Staff.create(createDataPassing);
+    const createData = await StaffExpenses.create(createDataPassing);
 
     if (!createData) {
       res.status(400).json({
-        message: "Failed to create staff data",
-        statusText: "Failed to create staff data",
+        message: "Failed to create staff expenses data",
+        statusText: "Failed to create staff expenses data",
         statusCode: 400,
       });
     } else {
-      res.send({
-        message: "Successfully created staff data",
-        statusText: "Successfully created staff data",
+      res.status(200).json({
+        message: "Successfully created staff expenses data",
+        statusText: "Successfully created staff expenses data",
         statusCode: 200,
+        data: createData,
       });
     }
   } catch (error) {
@@ -49,15 +65,15 @@ const CreateStaff = async (req, res, next) => {
   }
 };
 
-const GetStaff = async (req, res, next) => {
+const getStaffExpenses = async (req, res, next) => {
   try {
-    const getDataStaff = await Staff.find();
+    const getDataStaffExpenses = await StaffExpenses.find();
 
-    res.send({
-      message: "Successfully get staff data",
-      statusText: "Successfully get staff data",
+    res.status(200).json({
+      message: "Successfully fetched staff expenses data",
+      statusText: "Successfully fetched staff expenses data",
       statusCode: 200,
-      data: getDataStaff,
+      data: getDataStaffExpenses,
     });
   } catch (error) {
     console.error(error);
@@ -69,13 +85,13 @@ const GetStaff = async (req, res, next) => {
   }
 };
 
-const UpdateStaff = async (req, res, next) => {
+const updateStaffExpenses = async (req, res, next) => {
   try {
     const { id } = req.params;
     const { salary, phoneNumber, email } = req.body;
 
     // Cek apakah nomor telepon atau email sudah ada di database (kecuali untuk staf dengan id yang sedang diperbarui)
-    const existingStaff = await Staff.findOne({
+    const existingStaff = await StaffExpenses.findOne({
       $and: [
         { _id: { $ne: id } },
         { $or: [{ phone_number: phoneNumber }, { email: email }] },
@@ -88,29 +104,38 @@ const UpdateStaff = async (req, res, next) => {
       });
     }
 
-    const updateStaffData = {
+    const existingStaffExpenses = await StaffExpenses.findById(id);
+
+    const salaryDifference = salary - existingStaffExpenses.salary;
+
+    const newTotalCost = existingStaffExpenses.total_cost + salaryDifference;
+
+    const updateStaffExpensesData = {
       salary,
       phone_number: phoneNumber,
       email,
+      total_cost: newTotalCost,
       updated_date: new Date(),
     };
 
-    const updateStaffItem = await Staff.findByIdAndUpdate(id, updateStaffData, {
-      new: true,
-    });
+    const updateStaffExpensesItem = await StaffExpenses.findByIdAndUpdate(
+      id,
+      updateStaffExpensesData,
+      { new: true }
+    );
 
-    if (!updateStaffItem) {
+    if (!updateStaffExpensesItem) {
       res.status(404).json({
-        message: "Staff not found",
-        statusText: "Staff not found",
+        message: "Staff expenses not found",
+        statusText: "Staff expenses not found",
         statusCode: 404,
       });
     } else {
-      res.send({
-        message: "Successfully updated staff data",
-        statusText: "Successfully updated staff data",
+      res.status(200).json({
+        message: "Successfully updated staff expenses data",
+        statusText: "Successfully updated staff expenses data",
         statusCode: 200,
-        data: updateStaffItem,
+        data: updateStaffExpensesItem,
       });
     }
   } catch (error) {
@@ -123,24 +148,24 @@ const UpdateStaff = async (req, res, next) => {
   }
 };
 
-const DeleteStaff = async (req, res, next) => {
+const deleteStaffExpenses = async (req, res, next) => {
   try {
     const { id } = req.params;
 
-    const deleteStaffData = await Staff.findByIdAndDelete(id);
+    const deleteStaffExpensesData = await StaffExpenses.findByIdAndDelete(id);
 
-    if (!deleteStaffData) {
+    if (!deleteStaffExpensesData) {
       res.status(404).json({
-        message: "Staff not found",
-        statusText: "Staff not found",
+        message: "Staff expenses not found",
+        statusText: "Staff expenses not found",
         statusCode: 404,
       });
     } else {
-      res.send({
-        message: "Successfully deleted staff data",
-        statusText: "Successfully deleted staff data",
+      res.status(200).json({
+        message: "Successfully deleted staff expenses data",
+        statusText: "Successfully deleted staff expenses data",
         statusCode: 200,
-        data: deleteStaffData,
+        data: deleteStaffExpensesData,
       });
     }
   } catch (error) {
@@ -154,8 +179,8 @@ const DeleteStaff = async (req, res, next) => {
 };
 
 module.exports = {
-  CreateStaff,
-  GetStaff,
-  UpdateStaff,
-  DeleteStaff,
+  createStaffExpenses,
+  getStaffExpenses,
+  updateStaffExpenses,
+  deleteStaffExpenses,
 };

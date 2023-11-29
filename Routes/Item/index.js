@@ -10,14 +10,14 @@ const ItemMiddleware = require("../../MiddleWares/Item/itemValidation");
 router.post(
   "/",
   ItemMiddleware.validateItemCreation,
-  ItemController.CreateItem
+  ItemController.CreateItemExpenses
 );
-router.get("/", ItemController.GetItems);
+router.get("/", ItemController.GetItemsExpenses);
 router.put(
   "/:id",
   ItemMiddleware.validateItemUpdate,
-  ItemController.UpdateItem
+  ItemController.UpdateItemExpenses
 );
-router.delete("/:id", ItemController.DeleteItem);
+router.delete("/:id", ItemController.DeleteItemExpenses);
 
 module.exports = router;
