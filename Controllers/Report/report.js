@@ -1,11 +1,13 @@
 const ReportModels = require("../../Models/scheme/Report");
 
 const totalSales = async (req, res, next) => {
+  const token = req.tokenUser.data;
   try {
     const pipeline = [
       {
         $match: {
           criteria: "pemasukan",
+          business_id: token.business_id,
         },
       },
       {
@@ -35,11 +37,13 @@ const totalSales = async (req, res, next) => {
 };
 
 const totalExpense = async (req, res, next) => {
+  const token = req.tokenUser.data;
   try {
     const pipeline = [
       {
         $match: {
           criteria: "pengeluaran",
+          business_id: token.business_id,
         },
       },
       {
@@ -71,6 +75,7 @@ const totalExpense = async (req, res, next) => {
 const totalExpenseByCriteria = async (req, res) => {
   try {
     const { criteria } = req.params;
+    const token = req.tokenUser.data;
 
     // Validasi parameter
     if (!criteria) {
@@ -80,7 +85,7 @@ const totalExpenseByCriteria = async (req, res) => {
     // Query database untuk mendapatkan total pengeluaran berdasarkan kriteria
     const totalExpense = await ReportModels.aggregate([
       {
-        $match: { criteria: criteria },
+        $match: { criteria: criteria, business_id: token.business_id },
       },
       {
         $group: {
@@ -101,9 +106,13 @@ const totalExpenseByCriteria = async (req, res) => {
 };
 
 const getAllDataGrouping = async (req, res) => {
+  const token = req.tokenUser.data;
   try {
     // Query database untuk mendapatkan total nilai total_amount per bulan dan criteria
     const totalAmountPerMonth = await ReportModels.aggregate([
+      {
+        $match: { business_id: token.business_id },
+      },
       {
         $group: {
           _id: {
