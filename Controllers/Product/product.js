@@ -2,12 +2,13 @@ const ProductModels = require("../../Models/scheme/Product");
 
 const CreateProduct = async (req, res, next) => {
   const { product_name, price, quantity } = req.body;
-
+  const token = req.tokenUser.data;
   try {
     let createDataPassing = {
       product_name: product_name,
       price: price,
       quantity: quantity,
+      business_id: token.business_id,
       created_date: new Date(),
       updated_date: new Date(),
     };
@@ -34,7 +35,10 @@ const CreateProduct = async (req, res, next) => {
 };
 
 const GetProduct = async (req, res, next) => {
-  let getDataProduct = await ProductModels.find();
+  const token = req.tokenUser.data;
+  const getDataProduct = await ProductModels.find({
+    business_id: token.business_id,
+  });
 
   try {
     res.send({

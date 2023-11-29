@@ -5,6 +5,9 @@ var Schema = new Mongoose.Schema({
   product_name: { type: String },
   quantity: { type: Number },
   total_price: { type: Number },
+  business_id: {
+    type: String,
+  },
   created_date: { type: Date },
   updated_date: { type: String },
 });
