@@ -6,11 +6,20 @@ const ProductController = require("../../Controllers/Product/product");
 
 // Middlewares
 const ProductMiddleware = require("../../MiddleWares/Product/productValidation");
+const JWTMiddleware = require("../../MiddleWares/Auth/Authorization");
 
-routes.get("/", ProductController.GetProduct);
+routes.get(
+  "/",
+  [JWTMiddleware.verifyToken, JWTMiddleware.verifyJWTToken],
+  ProductController.GetProduct
+);
 routes.post(
   "/",
-  ProductMiddleware.productValidation,
+  [
+    ProductMiddleware.productValidation,
+    JWTMiddleware.verifyToken,
+    JWTMiddleware.verifyJWTToken,
+  ],
   ProductController.CreateProduct
 );
 routes.put("/:id", ProductController.UpdateProduct);

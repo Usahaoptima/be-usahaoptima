@@ -4,7 +4,7 @@ const ReportModels = require("../../Models/scheme/Report");
 
 const CreateSales = async (req, res, next) => {
   const { sales_name, product_name, quantity, total_price } = req.body;
-
+  const token = req.tokenUser.data;
   try {
     // Cari ID produk berdasarkan nama produk
     const product = await Product.findOne({ product_name: product_name });
@@ -22,6 +22,7 @@ const CreateSales = async (req, res, next) => {
       product_name: product_name,
       quantity: quantity,
       total_price: total_price,
+      business_id: token.business_id,
       created_date: new Date(),
       updated_date: new Date(),
     };
@@ -58,9 +59,11 @@ const CreateSales = async (req, res, next) => {
 };
 
 const GetSales = async (req, res, next) => {
+  const token = req.tokenUser.data;
   try {
-    let getDataSales = await SalesModels.find();
-
+    const getDataSales = await SalesModels.find({
+      business_id: token.business_id,
+    });
     res.send({
       message: "Successfull to get data sales",
       statusText: "Successfull to get data sales",
