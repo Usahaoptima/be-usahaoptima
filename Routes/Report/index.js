@@ -29,4 +29,28 @@ routes.get(
   ReportControllers.totalExpenseByCriteria
 );
 
+routes.get(
+  "/total-month/:month",
+  [AuthMiddleware.verifyToken, AuthMiddleware.verifyJWTToken],
+  ReportControllers.totalMonthly
+);
+
+routes.get(
+  "/total-sales/:month",
+  [AuthMiddleware.verifyToken, AuthMiddleware.verifyJWTToken],
+  ReportControllers.totalSalesMonthly
+);
+
+routes.get(
+  "/total-expense/:month",
+  [AuthMiddleware.verifyToken, AuthMiddleware.verifyJWTToken],
+  ReportControllers.totalExpenseMonthly
+);
+
+routes.get(
+  "/total/:criteria/:month",
+  [AuthMiddleware.verifyToken, AuthMiddleware.verifyJWTToken],
+  ReportControllers.totalExpenseByCriteriaMonthly
+);
+
 module.exports = routes;
