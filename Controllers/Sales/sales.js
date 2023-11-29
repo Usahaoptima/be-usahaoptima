@@ -34,6 +34,7 @@ const CreateSales = async (req, res, next) => {
       criteria: "pemasukan",
       create_at: new Date(),
       report_id: createData._id,
+      business_id: token.business_id,
     };
 
     const createReport = await ReportModels.create(dataReport);
@@ -103,7 +104,17 @@ const UpdateSales = async (req, res, next) => {
       { new: true }
     );
 
-    if (!updateSales) {
+    const updatedReportData = {
+      total_amount: updateSales.total_price,
+    };
+
+    const updateReport = await ReportModels.findOneAndUpdate(
+      { report_id: updateSales._id },
+      updatedReportData,
+      { new: true }
+    );
+
+    if (!updateSales && !updateReport) {
       res.status(404).json({
         message: "Sales not found",
         statusText: "Sales not found",
@@ -132,8 +143,10 @@ const DeleteSales = async (req, res, next) => {
     const { id } = req.params;
 
     const deleteSalesData = await SalesModels.findByIdAndDelete(id);
-
-    if (!deleteSalesData) {
+    const deleteReportData = await ReportModels.findOneAndDelete({
+      report_id: id,
+    });
+    if (!deleteSalesData && !deleteReportData) {
       res.status(404).json({
         message: "Sales not found",
         statusText: "Sales not found",

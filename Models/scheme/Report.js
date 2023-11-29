@@ -17,6 +17,9 @@ var Schema = new Mongoose.Schema({
   report_id: {
     type: String,
   },
+  business_id: {
+    type: String,
+  },
 });
 
 const Report = Mongoose.model("Report", Schema);
