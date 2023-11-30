@@ -98,7 +98,7 @@ async function Register(req, res, next) {
             createdData.email,
             "Verifikasi Akun",
             "Silahkan verifikasi akun anda",
-            `<br/> <a href="${url}">Verifikasi</a>`
+            `<h5>Hai Sobat Optima</h5> <br/> <p>Terimakasih telah memilih UsahaOptima sebagai aplikasi management bisnis anda<span>Yuk verifikasi akun anda</span></p> <a href="${url}">Verifikasi</a>`
           );
 
           res.status(201).send({
