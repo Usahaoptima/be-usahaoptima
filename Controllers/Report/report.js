@@ -194,22 +194,20 @@ const totalMonthly = async (req, res) => {
 
 const totalSalesMonthly = async (req, res) => {
   const token = req.tokenUser.data;
-  const { month } = req.params; // Mengambil nilai bulan dari parameter permintaan
+  const { month } = req.params;
 
   try {
     const matchStage = {
       $match: {
         criteria: "pemasukan",
         business_id: token.business_id,
-        $expr: { $eq: [{ $month: "$create_at" }, parseInt(month)] }, // Mencocokkan bulan
+        $expr: { $eq: [{ $month: "$create_at" }, parseInt(month)] },
       },
     };
 
-    const pipeline = [
-      matchStage,
-      {
-        $project: {
-          _id: 0,
+    const groupStage = {
+      $group: {
+        _id: {
           date: {
             $dateToString: {
               format: "%d-%m-%Y",
@@ -217,17 +215,33 @@ const totalSalesMonthly = async (req, res) => {
               timezone: "Asia/Jakarta",
             },
           },
-          totalAmount: { $sum: "$total_amount" },
         },
+        totalAmount: { $sum: "$total_amount" },
       },
-    ];
+    };
 
-    // Lanjutkan dengan menggunakan pipeline MongoDB
+    const sortStage = {
+      $sort: {
+        "_id.date": 1, // 1 untuk ascending, -1 untuk descending
+      },
+    };
+
+    const projectStage = {
+      $project: {
+        _id: 0,
+        date: "$_id.date",
+        totalAmount: 1,
+      },
+    };
+
+    const pipeline = [matchStage, groupStage, sortStage, projectStage];
+
     const result = await ReportModels.aggregate(pipeline);
     if (!result) {
       return res.status(404).json({ error: "Data not found" });
     }
-    res.status(200).send(result);
+
+    res.status(200).json(result);
   } catch (error) {
     console.error(error);
     res.status(500).json({ error: "Internal Server Error" });
@@ -235,23 +249,18 @@ const totalSalesMonthly = async (req, res) => {
 };
 
 const totalExpenseMonthly = async (req, res) => {
-  const token = req.tokenUser.data;
-  const { month } = req.params; // Mengambil nilai bulan dari parameter permintaan
-
   try {
     const matchStage = {
       $match: {
         criteria: "pengeluaran",
         business_id: token.business_id,
-        $expr: { $eq: [{ $month: "$create_at" }, parseInt(month)] }, // Mencocokkan bulan
+        $expr: { $eq: [{ $month: "$create_at" }, parseInt(month)] },
       },
     };
 
-    const pipeline = [
-      matchStage,
-      {
-        $project: {
-          _id: 0,
+    const groupStage = {
+      $group: {
+        _id: {
           date: {
             $dateToString: {
               format: "%d-%m-%Y",
@@ -259,17 +268,33 @@ const totalExpenseMonthly = async (req, res) => {
               timezone: "Asia/Jakarta",
             },
           },
-          totalAmount: { $sum: "$total_amount" },
         },
+        totalAmount: { $sum: "$total_amount" },
       },
-    ];
+    };
 
-    // Lanjutkan dengan menggunakan pipeline MongoDB
+    const sortStage = {
+      $sort: {
+        "_id.date": 1, // 1 untuk ascending, -1 untuk descending
+      },
+    };
+
+    const projectStage = {
+      $project: {
+        _id: 0,
+        date: "$_id.date",
+        totalAmount: 1,
+      },
+    };
+
+    const pipeline = [matchStage, groupStage, sortStage, projectStage];
+
     const result = await ReportModels.aggregate(pipeline);
     if (!result) {
       return res.status(404).json({ error: "Data not found" });
     }
-    res.status(200).send(result);
+
+    res.status(200).json(result);
   } catch (error) {
     console.error(error);
     res.status(500).json({ error: "Internal Server Error" });
