@@ -1,47 +1,92 @@
 const ItemExpenses = require("../../Models/scheme/Item_Expenses");
 
+const updateTotalCost = async () => {
+  const totalCosts = await ItemExpenses.aggregate([
+    {
+      $group: {
+        _id: null,
+        total: { $sum: "$cost" },
+      },
+    },
+  ]);
+
+  const newTotalCost = totalCosts.length > 0 ? totalCosts[0].total : 0;
+
+  await ItemExpenses.updateMany({}, { $set: { total_cost: newTotalCost } });
+};
+
 const CreateItemExpenses = async (req, res, next) => {
   const { itemName, cost, quantity } = req.body;
 
   try {
-    // Ambil total_cost dari semua data di database
-    const totalCosts = await ItemExpenses.aggregate([
-      {
-        $group: {
-          _id: null,
-          total: { $sum: "$total_cost" },
-        },
-      },
-    ]);
+    const existingItem = await ItemExpenses.findOne({ item_name: itemName });
 
-    // Set total_cost ke total biaya yang dihitung atau 0 jika tidak ada data
-    const newTotalCost =
-      totalCosts.length > 0 ? totalCosts[0].total + cost : cost;
+    if (existingItem) {
+      const newQuantity = existingItem.quantity + quantity;
 
-    const createDataPassing = {
-      item_name: itemName,
-      cost: cost,
-      quantity: quantity,
-      total_cost: newTotalCost,
-      created_date: new Date(),
-      updated_date: new Date().toISOString(),
-    };
+      const updateItemData = {
+        cost: existingItem.cost + cost,
+        quantity: newQuantity,
+        total_cost: existingItem.total_cost + cost,
+        updated_date: new Date().toISOString(),
+      };
 
-    const createData = await ItemExpenses.create(createDataPassing);
+      const updatedItem = await ItemExpenses.findByIdAndUpdate(
+        existingItem._id,
+        updateItemData,
+        { new: true }
+      );
 
-    if (!createData) {
-      res.status(400).json({
-        message: "Failed to create item expenses data",
-        statusText: "Failed to create item expenses data",
-        statusCode: 400,
+      // Update total_cost di semua data
+      await updateTotalCost();
+
+      res.status(200).json({
+        message: "Berhasil mengupdate data item",
+        statusText: "Berhasil mengupdate data item",
+        statusCode: 200,
+        data: updatedItem,
       });
     } else {
-      res.status(200).json({
-        message: "Successfully created item expenses data",
-        statusText: "Successfully created item expenses data",
-        statusCode: 200,
-        data: createData,
-      });
+      const totalCosts = await ItemExpenses.aggregate([
+        {
+          $group: {
+            _id: null,
+            total: { $sum: "$cost" },
+          },
+        },
+      ]);
+
+      const newTotalCost =
+        totalCosts.length > 0 ? totalCosts[0].total + cost : cost;
+
+      const createDataPassing = {
+        item_name: itemName,
+        cost: cost,
+        quantity: quantity,
+        total_cost: newTotalCost,
+        created_date: new Date(),
+        updated_date: new Date().toISOString(),
+      };
+
+      const createData = await ItemExpenses.create(createDataPassing);
+
+      if (!createData) {
+        res.status(400).json({
+          message: "Gagal membuat data item expenses",
+          statusText: "Gagal membuat data item expenses",
+          statusCode: 400,
+        });
+      } else {
+        // Update total_cost di semua data
+        await updateTotalCost();
+
+        res.status(200).json({
+          message: "Berhasil membuat data item expenses",
+          statusText: "Berhasil membuat data item expenses",
+          statusCode: 200,
+          data: createData,
+        });
+      }
     }
   } catch (error) {
     console.error(error);
@@ -57,12 +102,20 @@ const GetItemsExpenses = async (req, res, next) => {
   try {
     const getDataItems = await ItemExpenses.find();
 
-    res.send({
-      message: "Successfully fetched item expenses data",
-      statusText: "Successfully fetched item expenses data",
-      statusCode: 200,
-      data: getDataItems,
-    });
+    if (getDataItems.length === 0) {
+      res.status(404).json({
+        message: "No item expenses data found",
+        statusText: "No item expenses data found",
+        statusCode: 404,
+      });
+    } else {
+      res.send({
+        message: "Successfully fetched item expenses data",
+        statusText: "Successfully fetched item expenses data",
+        statusCode: 200,
+        data: getDataItems,
+      });
+    }
   } catch (error) {
     console.error(error);
     res.status(500).json({
@@ -92,28 +145,21 @@ const UpdateItemExpenses = async (req, res, next) => {
       updated_date: new Date().toISOString(),
     };
 
-    const updateItemExpenses = await ItemExpenses.findByIdAndUpdate(
+    const updateItem = await ItemExpenses.findByIdAndUpdate(
       id,
       updateItemExpensesData,
-      {
-        new: true,
-      }
+      { new: true }
     );
 
-    if (!updateItemExpenses) {
-      res.status(404).json({
-        message: "Item expenses not found",
-        statusText: "Item expenses not found",
-        statusCode: 404,
-      });
-    } else {
-      res.status(200).json({
-        message: "Successfully updated item data",
-        statusText: "Successfully updated item data",
-        statusCode: 200,
-        data: updateItemExpenses,
-      });
-    }
+    // Update total_cost di semua data
+    await updateTotalCost();
+
+    res.status(200).json({
+      message: "Successfully updated item data",
+      statusText: "Successfully updated item data",
+      statusCode: 200,
+      data: updateItem,
+    });
   } catch (error) {
     console.error(error);
     res.status(500).json({
@@ -128,22 +174,49 @@ const DeleteItemExpenses = async (req, res, next) => {
   try {
     const { id } = req.params;
 
-    const deleteItemExpensesData = await ItemExpenses.findByIdAndDelete(id);
+    const deleteItemData = await ItemExpenses.findByIdAndDelete(id);
 
-    if (!deleteItemExpensesData) {
+    if (!deleteItemData) {
       res.status(404).json({
         message: "Item expenses not found",
         statusText: "Item expenses not found",
         statusCode: 404,
       });
     } else {
+      // Update total_cost di semua data
+      await updateTotalCost();
+
       res.send({
         message: "Successfully deleted item expenses data",
         statusText: "Successfully deleted item expenses data",
         statusCode: 200,
-        data: deleteItemExpensesData,
+        data: deleteItemData,
       });
     }
+  } catch (error) {
+    console.error(error);
+    res.status(500).json({
+      message: "Internal server error",
+      statusText: "Internal server error",
+      statusCode: 500,
+    });
+  }
+};
+
+const DeleteAllItemsExpenses = async (req, res, next) => {
+  try {
+    // Hapus semua data item expenses
+    const deleteAllData = await ItemExpenses.deleteMany({});
+
+    // Update total_cost di semua data
+    await updateTotalCost();
+
+    res.status(200).json({
+      message: "Berhasil menghapus semua data item expenses",
+      statusText: "Berhasil menghapus semua data item expenses",
+      statusCode: 200,
+      data: { deletedCount: deleteAllData.deletedCount },
+    });
   } catch (error) {
     console.error(error);
     res.status(500).json({
@@ -159,4 +232,5 @@ module.exports = {
   GetItemsExpenses,
   UpdateItemExpenses,
   DeleteItemExpenses,
+  DeleteAllItemsExpenses,
 };
