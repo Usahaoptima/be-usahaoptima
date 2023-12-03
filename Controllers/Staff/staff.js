@@ -1,10 +1,25 @@
+const ReportModels = require("../../Models/scheme/Report");
 const StaffExpenses = require("../../Models/scheme/Staff_Expenses");
 
-const createStaffExpenses = async (req, res, next) => {
-  const { staffName, salary, phoneNumber, email } = req.body;
+const updateTotalCost = async () => {
+  const totalCosts = await StaffExpenses.aggregate([
+    {
+      $group: {
+        _id: null,
+        total: { $sum: "$salary" },
+      },
+    },
+  ]);
 
+  const newTotalCost = totalCosts.length > 0 ? totalCosts[0].total : 0;
+
+  await StaffExpenses.updateMany({}, { $set: { total_cost: newTotalCost } });
+};
+
+const createStaffExpenses = async (req, res, next) => {
   try {
-    // Cek apakah nomor telepon atau email sudah ada di database
+    const { staffName, salary, phoneNumber, email } = req.body;
+
     const existingStaff = await StaffExpenses.findOne({
       $or: [{ phone_number: phoneNumber }, { email: email }],
     });
@@ -15,7 +30,6 @@ const createStaffExpenses = async (req, res, next) => {
       });
     }
 
-    // Ambil total_cost dari semua data di database
     const totalCosts = await StaffExpenses.aggregate([
       {
         $group: {
@@ -25,7 +39,6 @@ const createStaffExpenses = async (req, res, next) => {
       },
     ]);
 
-    // Set total_cost ke total gaji yang dihitung atau salary jika tidak ada data
     const newTotalCost =
       totalCosts.length > 0 ? totalCosts[0].total + salary : salary;
 
@@ -48,6 +61,8 @@ const createStaffExpenses = async (req, res, next) => {
         statusCode: 400,
       });
     } else {
+      await updateTotalCost();
+
       res.status(200).json({
         message: "Successfully created staff expenses data",
         statusText: "Successfully created staff expenses data",
@@ -90,7 +105,6 @@ const updateStaffExpenses = async (req, res, next) => {
     const { id } = req.params;
     const { salary, phoneNumber, email } = req.body;
 
-    // Cek apakah nomor telepon atau email sudah ada di database (kecuali untuk staf dengan id yang sedang diperbarui)
     const existingStaff = await StaffExpenses.findOne({
       $and: [
         { _id: { $ne: id } },
@@ -131,6 +145,8 @@ const updateStaffExpenses = async (req, res, next) => {
         statusCode: 404,
       });
     } else {
+      await updateTotalCost();
+
       res.status(200).json({
         message: "Successfully updated staff expenses data",
         statusText: "Successfully updated staff expenses data",
@@ -161,6 +177,8 @@ const deleteStaffExpenses = async (req, res, next) => {
         statusCode: 404,
       });
     } else {
+      await updateTotalCost();
+
       res.status(200).json({
         message: "Successfully deleted staff expenses data",
         statusText: "Successfully deleted staff expenses data",
@@ -178,9 +196,34 @@ const deleteStaffExpenses = async (req, res, next) => {
   }
 };
 
+const deleteAllStaffExpenses = async (req, res, next) => {
+  try {
+    // Hapus semua data pengeluaran staf
+    const deleteAllData = await StaffExpenses.deleteMany({});
+
+    // Set total_cost ke 0 di semua data
+    await StaffExpenses.updateMany({}, { $set: { total_cost: 0 } });
+
+    res.status(200).json({
+      message: "Berhasil menghapus semua data pengeluaran staf",
+      statusText: "Berhasil menghapus semua data pengeluaran staf",
+      statusCode: 200,
+      data: { deletedCount: deleteAllData.deletedCount },
+    });
+  } catch (error) {
+    console.error(error);
+    res.status(500).json({
+      message: "Internal server error",
+      statusText: "Internal server error",
+      statusCode: 500,
+    });
+  }
+};
+
 module.exports = {
   createStaffExpenses,
   getStaffExpenses,
   updateStaffExpenses,
   deleteStaffExpenses,
+  deleteAllStaffExpenses,
 };
