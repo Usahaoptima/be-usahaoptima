@@ -84,6 +84,14 @@ const getStaffExpenses = async (req, res, next) => {
   try {
     const getDataStaffExpenses = await StaffExpenses.find();
 
+    if (getDataStaffExpenses.length === 0) {
+      return res.status(404).json({
+        message: "No staff expenses data found",
+        statusText: "No staff expenses data found",
+        statusCode: 404,
+      });
+    }
+
     res.status(200).json({
       message: "Successfully fetched staff expenses data",
       statusText: "Successfully fetched staff expenses data",
