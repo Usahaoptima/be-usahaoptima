@@ -19,5 +19,6 @@ router.put(
   ExpensesController.updateExpenses
 );
 router.delete("/:id", ExpensesController.deleteExpenses);
+router.delete("/", ExpensesController.deleteAllExpenses);
 
 module.exports = router;
