@@ -19,5 +19,6 @@ router.put(
   ItemController.UpdateItemExpenses
 );
 router.delete("/:id", ItemController.DeleteItemExpenses);
+router.delete("/", ItemController.DeleteAllItemsExpenses);
 
 module.exports = router;
