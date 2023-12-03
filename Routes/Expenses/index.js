@@ -6,19 +6,40 @@ const ExpensesController = require("../../Controllers/Expenses/expenses");
 
 // Middleware
 const ExpensesMiddleware = require("../../MiddleWares/Expenses/shopExpensesValidation");
+const AuthMiddleware = require("../../MiddleWares/Auth/Authorization");
 
 router.post(
   "/",
-  ExpensesMiddleware.validateExpensesCreation,
+  [
+    ExpensesMiddleware.validateExpensesCreation,
+    AuthMiddleware.verifyToken,
+    AuthMiddleware.verifyJWTToken,
+  ],
   ExpensesController.createExpenses
 );
-router.get("/", ExpensesController.getExpenses);
+router.get(
+  "/",
+  [AuthMiddleware.verifyToken, AuthMiddleware.verifyJWTToken],
+  ExpensesController.getExpenses
+);
 router.put(
   "/:id",
-  ExpensesMiddleware.validateExpensesUpdate,
+  [
+    ExpensesMiddleware.validateExpensesUpdate,
+    AuthMiddleware.verifyToken,
+    AuthMiddleware.verifyJWTToken,
+  ],
   ExpensesController.updateExpenses
 );
-router.delete("/:id", ExpensesController.deleteExpenses);
-router.delete("/", ExpensesController.deleteAllExpenses);
+router.delete(
+  "/:id",
+  [AuthMiddleware.verifyToken, AuthMiddleware.verifyJWTToken],
+  ExpensesController.deleteExpenses
+);
+router.delete(
+  "/",
+  [AuthMiddleware.verifyToken, AuthMiddleware.verifyJWTToken],
+  ExpensesController.deleteAllExpenses
+);
 
 module.exports = router;

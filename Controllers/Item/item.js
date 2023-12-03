@@ -17,6 +17,7 @@ const updateTotalCost = async () => {
 
 const CreateItemExpenses = async (req, res, next) => {
   const { itemName, cost, quantity } = req.body;
+  const token = req.tokenUser.data;
 
   try {
     const existingItem = await ItemExpenses.findOne({ item_name: itemName });
@@ -66,6 +67,7 @@ const CreateItemExpenses = async (req, res, next) => {
         total_cost: newTotalCost,
         created_date: new Date(),
         updated_date: new Date().toISOString(),
+        business_id: token.business_id,
       };
 
       const createData = await ItemExpenses.create(createDataPassing);
@@ -100,7 +102,10 @@ const CreateItemExpenses = async (req, res, next) => {
 
 const GetItemsExpenses = async (req, res, next) => {
   try {
-    const getDataItems = await ItemExpenses.find();
+    const token = req.tokenUser.data;
+    const getDataItems = await ItemExpenses.find({
+      business_id: token.business_id,
+    });
 
     if (getDataItems.length === 0) {
       res.status(404).json({

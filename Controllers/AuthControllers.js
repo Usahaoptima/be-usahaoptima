@@ -153,10 +153,8 @@ async function Login(req, res, next) {
         });
       }
 
-      let expiredToken = Math.floor(Date.now() / 1000) + 60 * 60;
       let createAccessToken = JWT.sign(
         {
-          exp: expiredToken,
           data: {
             user: getUser[0].username,
             user_id: getUser[0]._id,

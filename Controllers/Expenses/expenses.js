@@ -3,6 +3,7 @@ const Expenses = require("../../Models/scheme/Shop_Expenses");
 
 const createExpenses = async (req, res, next) => {
   const { expenseName, cost } = req.body;
+  const token = req.tokenUser.data;
 
   try {
     const createDataPassing = {
@@ -10,6 +11,7 @@ const createExpenses = async (req, res, next) => {
       cost: cost,
       created_date: new Date(),
       updated_date: new Date().toISOString(),
+      business_id: token.business_id,
     };
 
     const createData = await Expenses.create(createDataPassing);
@@ -66,7 +68,10 @@ const createExpenses = async (req, res, next) => {
 
 const getExpenses = async (req, res, next) => {
   try {
-    const getDataExpenses = await Expenses.find();
+    const token = req.tokenUser.data;
+    const getDataExpenses = await Expenses.find({
+      business_id: token.business_id,
+    });
 
     if (getDataExpenses.length === 0) {
       res.status(404).json({

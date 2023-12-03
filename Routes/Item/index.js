@@ -6,19 +6,40 @@ const ItemController = require("../../Controllers/Item/item");
 
 // Middlewares
 const ItemMiddleware = require("../../MiddleWares/Item/itemValidation");
+const AuthMiddleware = require("../../MiddleWares/Auth/Authorization");
 
 router.post(
   "/",
-  ItemMiddleware.validateItemCreation,
+  [
+    ItemMiddleware.validateItemCreation,
+    AuthMiddleware.verifyToken,
+    AuthMiddleware.verifyJWTToken,
+  ],
   ItemController.CreateItemExpenses
 );
-router.get("/", ItemController.GetItemsExpenses);
+router.get(
+  "/",
+  [AuthMiddleware.verifyToken, AuthMiddleware.verifyJWTToken],
+  ItemController.GetItemsExpenses
+);
 router.put(
   "/:id",
-  ItemMiddleware.validateItemUpdate,
+  [
+    ItemMiddleware.validateItemUpdate,
+    AuthMiddleware.verifyToken,
+    AuthMiddleware.verifyJWTToken,
+  ],
   ItemController.UpdateItemExpenses
 );
-router.delete("/:id", ItemController.DeleteItemExpenses);
-router.delete("/", ItemController.DeleteAllItemsExpenses);
+router.delete(
+  "/:id",
+  [AuthMiddleware.verifyToken, AuthMiddleware.verifyJWTToken],
+  ItemController.DeleteItemExpenses
+);
+router.delete(
+  "/",
+  [AuthMiddleware.verifyToken, AuthMiddleware.verifyJWTToken],
+  ItemController.DeleteAllItemsExpenses
+);
 
 module.exports = router;
