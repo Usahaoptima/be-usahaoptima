@@ -10,6 +10,9 @@ const staffSchema = new mongoose.Schema({
   total_cost: { type: Number },
   created_date: { type: Date },
   updated_date: { type: Date },
+  business_id: {
+    type: String,
+  },
 });
 
 // staffSchema.plugin(AutoIncrement, { inc_field: "no" });

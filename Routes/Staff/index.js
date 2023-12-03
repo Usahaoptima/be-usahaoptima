@@ -6,19 +6,40 @@ const StaffController = require("../../Controllers/Staff/staff");
 
 // Middlewares
 const StaffMiddleware = require("../../MiddleWares/Staff/staffValidation");
+const AuthMiddleware = require("../../MiddleWares/Auth/Authorization");
 
 router.post(
   "/",
-  StaffMiddleware.validateStaffCreation,
+  [
+    StaffMiddleware.validateStaffCreation,
+    AuthMiddleware.verifyToken,
+    AuthMiddleware.verifyJWTToken,
+  ],
   StaffController.createStaffExpenses
 );
-router.get("/", StaffController.getStaffExpenses);
+router.get(
+  "/",
+  [AuthMiddleware.verifyToken, AuthMiddleware.verifyJWTToken],
+  StaffController.getStaffExpenses
+);
 router.put(
   "/:id",
-  StaffMiddleware.validateStaffUpdate,
+  [
+    StaffMiddleware.validateStaffUpdate,
+    AuthMiddleware.verifyToken,
+    AuthMiddleware.verifyJWTToken,
+  ],
   StaffController.updateStaffExpenses
 );
-router.delete("/:id", StaffController.deleteStaffExpenses);
-router.delete("/", StaffController.deleteAllStaffExpenses);
+router.delete(
+  "/:id",
+  [AuthMiddleware.verifyToken, AuthMiddleware.verifyJWTToken],
+  StaffController.deleteStaffExpenses
+);
+router.delete(
+  "/",
+  [AuthMiddleware.verifyToken, AuthMiddleware.verifyJWTToken],
+  StaffController.deleteAllStaffExpenses
+);
 
 module.exports = router;

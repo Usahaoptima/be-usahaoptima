@@ -19,7 +19,7 @@ const updateTotalCost = async () => {
 const createStaffExpenses = async (req, res, next) => {
   try {
     const { staffName, salary, phoneNumber, email } = req.body;
-
+    const token = req.tokenUser.data;
     const existingStaff = await StaffExpenses.findOne({
       $or: [{ phone_number: phoneNumber }, { email: email }],
     });
@@ -50,6 +50,7 @@ const createStaffExpenses = async (req, res, next) => {
       total_cost: newTotalCost,
       created_date: new Date(),
       updated_date: new Date(),
+      business_id: token.business_id,
     };
 
     const createData = await StaffExpenses.create(createDataPassing);
@@ -82,7 +83,10 @@ const createStaffExpenses = async (req, res, next) => {
 
 const getStaffExpenses = async (req, res, next) => {
   try {
-    const getDataStaffExpenses = await StaffExpenses.find();
+    const token = req.tokenUser.data;
+    const getDataStaffExpenses = await StaffExpenses.find({
+      business_id: token.business_id,
+    });
 
     if (getDataStaffExpenses.length === 0) {
       return res.status(404).json({
