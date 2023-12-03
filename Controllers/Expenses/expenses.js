@@ -5,50 +5,53 @@ const createExpenses = async (req, res, next) => {
   const { expenseName, cost } = req.body;
 
   try {
-    // Ambil total_cost dari semua data di database
-    const totalCosts = await Expenses.aggregate([
-      {
-        $group: {
-          _id: null,
-          total: { $sum: "$cost" },
-        },
-      },
-    ]);
-
-    // Set total_cost ke total biaya yang dihitung atau 0 jika tidak ada data
-    const newTotalCost =
-      totalCosts.length > 0 ? totalCosts[0].total + cost : cost;
-
     const createDataPassing = {
       expense_name: expenseName,
       cost: cost,
-      total_cost: newTotalCost,
       created_date: new Date(),
       updated_date: new Date().toISOString(),
     };
 
     const createData = await Expenses.create(createDataPassing);
-    const dataReport = {
-      total_amount: createData.total_cost,
-      criteria: "pengeluaran",
-      create_at: new Date(),
-      report_id: createData._id,
-    };
-
-    const createReport = await ReportModels.create(dataReport);
 
     if (!createData) {
       res.status(400).json({
-        message: "Failed to create expenses data",
-        statusText: "Failed to create expenses data",
+        message: "Gagal membuat data pengeluaran",
+        statusText: "Gagal membuat data pengeluaran",
         statusCode: 400,
       });
     } else {
+      // Dapatkan total_cost dari semua data di database
+      const totalCosts = await Expenses.aggregate([
+        {
+          $group: {
+            _id: null,
+            total: { $sum: "$cost" },
+          },
+        },
+      ]);
+
+      // Set total_cost ke total biaya yang dihitung
+      const newTotalCost = totalCosts.length > 0 ? totalCosts[0].total : 0;
+
+      // Perbarui total_cost di semua data
+      await Expenses.updateMany({}, { $set: { total_cost: newTotalCost } });
+
+      // Buat data report
+      const dataReport = {
+        total_amount: newTotalCost,
+        criteria: "pengeluaran",
+        create_at: new Date(),
+        report_id: createData._id,
+      };
+
+      await ReportModels.create(dataReport);
+
       res.status(200).json({
-        message: "Successfully created expenses data",
-        statusText: "Successfully created expenses data",
+        message: "Berhasil membuat data pengeluaran",
+        statusText: "Berhasil membuat data pengeluaran",
         statusCode: 200,
-        data: createData,
+        data: { ...createData._doc, total_cost: newTotalCost },
       });
     }
   } catch (error) {
@@ -65,12 +68,20 @@ const getExpenses = async (req, res, next) => {
   try {
     const getDataExpenses = await Expenses.find();
 
-    res.status(200).json({
-      message: "Successfully fetched expenses data",
-      statusText: "Successfully fetched expenses data",
-      statusCode: 200,
-      data: getDataExpenses,
-    });
+    if (getDataExpenses.length === 0) {
+      res.status(404).json({
+        message: "Tidak ditemukan data pengeluaran",
+        statusText: "Tidak ditemukan data pengeluaran",
+        statusCode: 404,
+      });
+    } else {
+      res.status(200).json({
+        message: "Berhasil mengambil data pengeluaran",
+        statusText: "Berhasil mengambil data pengeluaran",
+        statusCode: 200,
+        data: getDataExpenses,
+      });
+    }
   } catch (error) {
     console.error(error);
     res.status(500).json({
@@ -107,16 +118,44 @@ const updateExpenses = async (req, res, next) => {
 
     if (!updateExpensesItem) {
       res.status(404).json({
-        message: "Expenses not found",
-        statusText: "Expenses not found",
+        message: "Data pengeluaran tidak ditemukan",
+        statusText: "Data pengeluaran tidak ditemukan",
         statusCode: 404,
       });
     } else {
+      // Dapatkan total_cost dari semua data di database
+      const totalCosts = await Expenses.aggregate([
+        {
+          $group: {
+            _id: null,
+            total: { $sum: "$cost" },
+          },
+        },
+      ]);
+
+      // Set total_cost ke total biaya yang dihitung
+      const newTotalCost = totalCosts.length > 0 ? totalCosts[0].total : 0;
+
+      // Perbarui total_cost di semua data
+      await Expenses.updateMany({}, { $set: { total_cost: newTotalCost } });
+
+      // Update data report
+      const reportUpdateData = {
+        total_amount: updateExpensesItem.total_cost,
+        create_at: new Date(),
+      };
+
+      await ReportModels.findOneAndUpdate(
+        { report_id: updateExpensesItem._id },
+        reportUpdateData,
+        { new: true }
+      );
+
       res.status(200).json({
-        message: "Successfully updated expenses data",
-        statusText: "Successfully updated expenses data",
+        message: "Berhasil memperbarui data pengeluaran",
+        statusText: "Berhasil memperbarui data pengeluaran",
         statusCode: 200,
-        data: updateExpensesItem,
+        data: { ...updateExpensesItem._doc, total_cost: newTotalCost },
       });
     }
   } catch (error) {
@@ -137,18 +176,66 @@ const deleteExpenses = async (req, res, next) => {
 
     if (!deleteExpensesData) {
       res.status(404).json({
-        message: "Expenses not found",
-        statusText: "Expenses not found",
+        message: "Data pengeluaran tidak ditemukan",
+        statusText: "Data pengeluaran tidak ditemukan",
         statusCode: 404,
       });
     } else {
+      // Dapatkan total_cost dari semua data di database
+      const totalCosts = await Expenses.aggregate([
+        {
+          $group: {
+            _id: null,
+            total: { $sum: "$cost" },
+          },
+        },
+      ]);
+
+      // Set total_cost ke total biaya yang dihitung
+      const newTotalCost = totalCosts.length > 0 ? totalCosts[0].total : 0;
+
+      // Hapus data report yang terkait
+      await ReportModels.findOneAndDelete({
+        report_id: deleteExpensesData._id,
+      });
+
+      // Perbarui total_cost di semua data
+      await Expenses.updateMany({}, { $set: { total_cost: newTotalCost } });
+
       res.status(200).json({
-        message: "Successfully deleted expenses data",
-        statusText: "Successfully deleted expenses data",
+        message: "Berhasil menghapus data pengeluaran",
+        statusText: "Berhasil menghapus data pengeluaran",
         statusCode: 200,
-        data: deleteExpensesData,
+        data: { deletedId: deleteExpensesData._id },
       });
     }
+  } catch (error) {
+    console.error(error);
+    res.status(500).json({
+      message: "Internal server error",
+      statusText: "Internal server error",
+      statusCode: 500,
+    });
+  }
+};
+
+const deleteAllExpenses = async (req, res, next) => {
+  try {
+    // Hapus semua data pengeluaran
+    const deleteAllData = await Expenses.deleteMany({});
+
+    // Hapus semua data report
+    await ReportModels.deleteMany({});
+
+    // Set total_cost ke 0 di semua data
+    await Expenses.updateMany({}, { $set: { total_cost: 0 } });
+
+    res.status(200).json({
+      message: "Berhasil menghapus semua data pengeluaran",
+      statusText: "Berhasil menghapus semua data pengeluaran",
+      statusCode: 200,
+      data: { deletedCount: deleteAllData.deletedCount },
+    });
   } catch (error) {
     console.error(error);
     res.status(500).json({
@@ -164,4 +251,5 @@ module.exports = {
   getExpenses,
   updateExpenses,
   deleteExpenses,
+  deleteAllExpenses,
 };

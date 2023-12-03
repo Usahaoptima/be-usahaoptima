@@ -19,5 +19,6 @@ router.put(
   StaffController.updateStaffExpenses
 );
 router.delete("/:id", StaffController.deleteStaffExpenses);
+router.delete("/", StaffController.deleteAllStaffExpenses);
 
 module.exports = router;
