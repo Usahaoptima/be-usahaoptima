@@ -74,20 +74,12 @@ const getExpenses = async (req, res, next) => {
       business_id: token.business_id,
     });
 
-    if (getDataExpenses.length === 0) {
-      res.status(404).json({
-        message: "Tidak ditemukan data pengeluaran",
-        statusText: "Tidak ditemukan data pengeluaran",
-        statusCode: 404,
-      });
-    } else {
-      res.status(200).json({
-        message: "Berhasil mengambil data pengeluaran",
-        statusText: "Berhasil mengambil data pengeluaran",
-        statusCode: 200,
-        data: getDataExpenses,
-      });
-    }
+    res.status(200).json({
+      message: "Berhasil mengambil data pengeluaran",
+      statusText: "Berhasil mengambil data pengeluaran",
+      statusCode: 200,
+      data: getDataExpenses,
+    });
   } catch (error) {
     console.error(error);
     res.status(500).json({
