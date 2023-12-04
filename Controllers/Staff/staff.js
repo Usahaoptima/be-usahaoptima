@@ -54,6 +54,15 @@ const createStaffExpenses = async (req, res, next) => {
     };
 
     const createData = await StaffExpenses.create(createDataPassing);
+    const dataReport = {
+      total_amount: newTotalCost,
+      criteria: "pengeluaran",
+      create_at: new Date(),
+      report_id: createData._id,
+      business_id: token.business_id,
+    };
+
+    await ReportModels.create(dataReport);
 
     if (!createData) {
       res.status(400).json({
@@ -150,7 +159,15 @@ const updateStaffExpenses = async (req, res, next) => {
       { new: true }
     );
 
-    if (!updateStaffExpensesItem) {
+    const reportUpdateData = {
+      total_amount: updateItemExpensesData.total_cost,
+    };
+
+    await ReportModels.findOneAndUpdate({ report_id: id }, reportUpdateData, {
+      new: true,
+    });
+
+    if (!updateStaffExpensesItem && !reportUpdateData) {
       res.status(404).json({
         message: "Staff expenses not found",
         statusText: "Staff expenses not found",
@@ -181,8 +198,11 @@ const deleteStaffExpenses = async (req, res, next) => {
     const { id } = req.params;
 
     const deleteStaffExpensesData = await StaffExpenses.findByIdAndDelete(id);
+    const deleteReportData = await ReportModels.findOneAndDelete({
+      report_id: id,
+    });
 
-    if (!deleteStaffExpensesData) {
+    if (!deleteStaffExpensesData && !deleteReportData) {
       res.status(404).json({
         message: "Staff expenses not found",
         statusText: "Staff expenses not found",

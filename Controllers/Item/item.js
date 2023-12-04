@@ -1,4 +1,5 @@
 const ItemExpenses = require("../../Models/scheme/Item_Expenses");
+const ReportModels = require("../../Models/scheme/Report");
 
 const updateTotalCost = async () => {
   const totalCosts = await ItemExpenses.aggregate([
@@ -71,6 +72,16 @@ const CreateItemExpenses = async (req, res, next) => {
       };
 
       const createData = await ItemExpenses.create(createDataPassing);
+
+      const dataReport = {
+        total_amount: newTotalCost,
+        criteria: "pengeluaran",
+        create_at: new Date(),
+        report_id: createData._id,
+        business_id: token.business_id,
+      };
+
+      await ReportModels.create(dataReport);
 
       if (!createData) {
         res.status(400).json({
@@ -159,6 +170,14 @@ const UpdateItemExpenses = async (req, res, next) => {
     // Update total_cost di semua data
     await updateTotalCost();
 
+    const reportUpdateData = {
+      total_amount: updateItemExpensesData.total_cost,
+    };
+
+    await ReportModels.findOneAndUpdate({ report_id: id }, reportUpdateData, {
+      new: true,
+    });
+
     res.status(200).json({
       message: "Successfully updated item data",
       statusText: "Successfully updated item data",
@@ -180,8 +199,11 @@ const DeleteItemExpenses = async (req, res, next) => {
     const { id } = req.params;
 
     const deleteItemData = await ItemExpenses.findByIdAndDelete(id);
+    const deleteReportData = await ReportModels.findOneAndDelete({
+      report_id: id,
+    });
 
-    if (!deleteItemData) {
+    if (!deleteItemData && !deleteReportData) {
       res.status(404).json({
         message: "Item expenses not found",
         statusText: "Item expenses not found",
