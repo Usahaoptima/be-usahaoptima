@@ -249,6 +249,9 @@ const totalSalesMonthly = async (req, res) => {
 };
 
 const totalExpenseMonthly = async (req, res) => {
+  const token = req.tokenUser.data;
+  const { month } = req.params;
+
   try {
     const matchStage = {
       $match: {
