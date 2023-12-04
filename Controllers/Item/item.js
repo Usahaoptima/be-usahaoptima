@@ -74,7 +74,7 @@ const CreateItemExpenses = async (req, res, next) => {
       const createData = await ItemExpenses.create(createDataPassing);
 
       const dataReport = {
-        total_amount: newTotalCost,
+        total_amount: cost,
         criteria: "pengeluaran",
         create_at: new Date(),
         report_id: createData._id,
@@ -171,7 +171,7 @@ const UpdateItemExpenses = async (req, res, next) => {
     await updateTotalCost();
 
     const reportUpdateData = {
-      total_amount: updateItemExpensesData.total_cost,
+      total_amount: cost,
     };
 
     await ReportModels.findOneAndUpdate({ report_id: id }, reportUpdateData, {

@@ -41,7 +41,7 @@ const createExpenses = async (req, res, next) => {
 
       // Buat data report
       const dataReport = {
-        total_amount: newTotalCost,
+        total_amount: cost,
         criteria: "pengeluaran",
         create_at: new Date(),
         report_id: createData._id,
@@ -147,7 +147,7 @@ const updateExpenses = async (req, res, next) => {
 
       // Update data report
       const reportUpdateData = {
-        total_amount: updateExpensesItem.total_cost,
+        total_amount: cost,
       };
 
       await ReportModels.findOneAndUpdate(
