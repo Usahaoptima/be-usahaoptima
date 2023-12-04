@@ -7,13 +7,9 @@ module.exports = async (email, subject, text, html) => {
       host: process.env.HOST,
       port: process.env.EMAIL_PORT,
       secure: Boolean(process.env.SECURE),
-      secureConnection: Boolean(process.env.SECURE_CONNECTION),
       auth: {
-        user: process.env.USER,
-        pass: process.env.PASSWORD,
-      },
-      tls: {
-        rejectUnauthorized: process.env.REJECT,
+        user: "usahaoptima2@gmail.com",
+        pass: "httrmsccbcfaowfc",
       },
     });
     await transporter.sendMail({
