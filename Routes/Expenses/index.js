@@ -37,7 +37,7 @@ router.delete(
   ExpensesController.deleteExpenses
 );
 router.get(
-  "/",
+  "/total",
   [AuthMiddleware.verifyToken, AuthMiddleware.verifyJWTToken],
   ExpensesController.TotalCost
 );
