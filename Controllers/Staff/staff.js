@@ -1,27 +1,12 @@
 const ReportModels = require("../../Models/scheme/Report");
 const StaffExpenses = require("../../Models/scheme/Staff_Expenses");
 
-const updateTotalCost = async () => {
-  const totalCosts = await StaffExpenses.aggregate([
-    {
-      $group: {
-        _id: null,
-        total: { $sum: "$salary" },
-      },
-    },
-  ]);
-
-  const newTotalCost = totalCosts.length > 0 ? totalCosts[0].total : 0;
-
-  await StaffExpenses.updateMany({}, { $set: { total_cost: newTotalCost } });
-};
-
 const createStaffExpenses = async (req, res, next) => {
   try {
-    const { staffName, salary, phoneNumber, email } = req.body;
+    const { staff_name, salary, phone_number, email } = req.body;
     const token = req.tokenUser.data;
     const existingStaff = await StaffExpenses.findOne({
-      $or: [{ phone_number: phoneNumber }, { email: email }],
+      $or: [{ phone_number: phone_number }, { email: email }],
     });
 
     if (existingStaff) {
@@ -30,30 +15,18 @@ const createStaffExpenses = async (req, res, next) => {
       });
     }
 
-    const totalCosts = await StaffExpenses.aggregate([
-      {
-        $group: {
-          _id: null,
-          total: { $sum: "$salary" },
-        },
-      },
-    ]);
-
-    const newTotalCost =
-      totalCosts.length > 0 ? totalCosts[0].total + salary : salary;
-
     const createDataPassing = {
-      staff_name: staffName,
-      salary,
-      phone_number: phoneNumber,
-      email,
-      total_cost: newTotalCost,
+      staff_name: staff_name,
+      salary: salary,
+      phone_number: phone_number,
+      email: email,
       created_date: new Date(),
       updated_date: new Date(),
       business_id: token.business_id,
     };
 
     const createData = await StaffExpenses.create(createDataPassing);
+
     const dataReport = {
       total_amount: salary,
       criteria: "pengeluaran",
@@ -71,8 +44,6 @@ const createStaffExpenses = async (req, res, next) => {
         statusCode: 400,
       });
     } else {
-      await updateTotalCost();
-
       res.status(200).json({
         message: "Successfully created staff expenses data",
         statusText: "Successfully created staff expenses data",
@@ -124,12 +95,12 @@ const getStaffExpenses = async (req, res, next) => {
 const updateStaffExpenses = async (req, res, next) => {
   try {
     const { id } = req.params;
-    const { salary, phoneNumber, email } = req.body;
+    const { salary, phone_number, email } = req.body;
 
     const existingStaff = await StaffExpenses.findOne({
       $and: [
         { _id: { $ne: id } },
-        { $or: [{ phone_number: phoneNumber }, { email: email }] },
+        { $or: [{ phone_number: phone_number }, { email: email }] },
       ],
     });
 
@@ -141,15 +112,18 @@ const updateStaffExpenses = async (req, res, next) => {
 
     const existingStaffExpenses = await StaffExpenses.findById(id);
 
-    const salaryDifference = salary - existingStaffExpenses.salary;
-
-    const newTotalCost = existingStaffExpenses.total_cost + salaryDifference;
+    if (!existingStaffExpenses) {
+      return res.status(404).json({
+        message: "Staff expenses not found",
+        statusText: "Staff expenses not found",
+        statusCode: 404,
+      });
+    }
 
     const updateStaffExpensesData = {
-      salary,
-      phone_number: phoneNumber,
-      email,
-      total_cost: newTotalCost,
+      salary: salary,
+      phone_number: phone_number,
+      email: email,
       updated_date: new Date(),
     };
 
@@ -174,8 +148,6 @@ const updateStaffExpenses = async (req, res, next) => {
         statusCode: 404,
       });
     } else {
-      await updateTotalCost();
-
       res.status(200).json({
         message: "Successfully updated staff expenses data",
         statusText: "Successfully updated staff expenses data",
@@ -209,8 +181,6 @@ const deleteStaffExpenses = async (req, res, next) => {
         statusCode: 404,
       });
     } else {
-      await updateTotalCost();
-
       res.status(200).json({
         message: "Successfully deleted staff expenses data",
         statusText: "Successfully deleted staff expenses data",
@@ -228,27 +198,30 @@ const deleteStaffExpenses = async (req, res, next) => {
   }
 };
 
-const deleteAllStaffExpenses = async (req, res, next) => {
+const TotalCost = async (req, res, next) => {
+  const token = req.tokenUser.data;
   try {
-    // Hapus semua data pengeluaran staf
-    const deleteAllData = await StaffExpenses.deleteMany({});
+    const totalCost = await StaffExpenses.aggregate([
+      {
+        $match: { business_id: token.business_id },
+      },
+      {
+        $group: {
+          _id: null,
+          total: { $sum: "$salary" },
+        },
+      },
+    ]);
 
-    // Set total_cost ke 0 di semua data
-    await StaffExpenses.updateMany({}, { $set: { total_cost: 0 } });
-
-    res.status(200).json({
-      message: "Berhasil menghapus semua data pengeluaran staf",
-      statusText: "Berhasil menghapus semua data pengeluaran staf",
-      statusCode: 200,
-      data: { deletedCount: deleteAllData.deletedCount },
+    // Respon dengan total pengeluaran
+    res.send({
+      data: {
+        totalCost: totalCost.length > 0 ? totalCost[0].total : 0,
+      },
     });
   } catch (error) {
-    console.error(error);
-    res.status(500).json({
-      message: "Internal server error",
-      statusText: "Internal server error",
-      statusCode: 500,
-    });
+    console.error("Error:", error);
+    res.status(500).json({ error: "Internal Server Error" });
   }
 };
 
@@ -257,5 +230,5 @@ module.exports = {
   getStaffExpenses,
   updateStaffExpenses,
   deleteStaffExpenses,
-  deleteAllStaffExpenses,
+  TotalCost,
 };

@@ -36,10 +36,10 @@ router.delete(
   [AuthMiddleware.verifyToken, AuthMiddleware.verifyJWTToken],
   ExpensesController.deleteExpenses
 );
-router.delete(
+router.get(
   "/",
   [AuthMiddleware.verifyToken, AuthMiddleware.verifyJWTToken],
-  ExpensesController.deleteAllExpenses
+  ExpensesController.TotalCost
 );
 
 module.exports = router;
