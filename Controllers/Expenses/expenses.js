@@ -37,7 +37,7 @@ const createExpenses = async (req, res, next) => {
         message: "Berhasil membuat data pengeluaran",
         statusText: "Berhasil membuat data pengeluaran",
         statusCode: 200,
-        data: { ...createData._doc, total_cost: newTotalCost },
+        data: createData,
       });
     }
   } catch (error) {
@@ -91,7 +91,6 @@ const updateExpenses = async (req, res, next) => {
     const updateExpensesData = {
       expense_name: expense_name,
       cost: cost,
-      total_cost: newTotalCost,
       updated_date: new Date().toISOString(),
     };
 
