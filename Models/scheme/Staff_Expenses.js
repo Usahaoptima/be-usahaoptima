@@ -7,7 +7,6 @@ const staffSchema = new mongoose.Schema({
   salary: { type: Number },
   email: { type: String },
   phone_number: { type: String },
-  total_cost: { type: Number },
   created_date: { type: Date },
   updated_date: { type: Date },
   business_id: {

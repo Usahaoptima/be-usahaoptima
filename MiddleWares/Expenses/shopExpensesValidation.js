@@ -1,8 +1,8 @@
 const validateExpensesCreation = (req, res, next) => {
-  const { expenseName, cost } = req.body;
+  const { expense_name, cost } = req.body;
 
-  // Validasi expenseName
-  if (!expenseName || expenseName.trim() === "") {
+  // Validasi expense_name
+  if (!expense_name || expense_name.trim() === "") {
     return res.status(400).json({ error: "Nama pengeluaran diperlukan." });
   }
 
