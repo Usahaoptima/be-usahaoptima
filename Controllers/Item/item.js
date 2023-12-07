@@ -87,20 +87,12 @@ const GetItemsExpenses = async (req, res, next) => {
       business_id: token.business_id,
     });
 
-    if (getDataItems.length === 0) {
-      res.status(404).json({
-        message: "No item expenses data found",
-        statusText: "No item expenses data found",
-        statusCode: 404,
-      });
-    } else {
-      res.send({
-        message: "Successfully fetched item expenses data",
-        statusText: "Successfully fetched item expenses data",
-        statusCode: 200,
-        data: getDataItems,
-      });
-    }
+    res.send({
+      message: "Successfully fetched item expenses data",
+      statusText: "Successfully fetched item expenses data",
+      statusCode: 200,
+      data: getDataItems,
+    });
   } catch (error) {
     console.error(error);
     res.status(500).json({
