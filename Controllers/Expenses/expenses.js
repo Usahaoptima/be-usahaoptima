@@ -171,7 +171,7 @@ const deleteExpenses = async (req, res, next) => {
 const TotalCost = async (req, res, next) => {
   const token = req.tokenUser.data;
   try {
-    const totalCost = await StaffExpenses.aggregate([
+    const totalCost = await Expenses.aggregate([
       {
         $match: { business_id: token.business_id },
       },
