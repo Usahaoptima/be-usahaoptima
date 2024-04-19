@@ -165,7 +165,7 @@ async function Login(req, res, next) {
       );
 
       let dataPassingClient = {
-        access_token: createAccessToken, // access token expired 1 day
+        access_token: createAccessToken,
         user: getUser[0].username,
         id: getUser[0]._id,
       };

@@ -1,8 +1,8 @@
 const validateStaffCreation = (req, res, next) => {
-  const { staffName, salary, phoneNumber, email } = req.body;
+  const { staff_name, salary, phone_number, email } = req.body;
 
-  // Validasi staffName
-  if (!staffName || staffName.trim() === "") {
+  // Validasi staff_name
+  if (!staff_name || staff_name.trim() === "") {
     return res.status(400).json({ error: "Nama karyawan diperlukan." });
   }
 
@@ -13,7 +13,7 @@ const validateStaffCreation = (req, res, next) => {
 
   // Validasi phoneNumber (gunakan regex Indonesia)
   const phoneNumberRegex = /^(\+62|0)[0-9]{8,15}$/;
-  if (!phoneNumberRegex.test(phoneNumber)) {
+  if (!phoneNumberRegex.test(phone_number)) {
     return res.status(400).json({ error: "Format nomor telepon tidak valid." });
   }
 
@@ -27,7 +27,7 @@ const validateStaffCreation = (req, res, next) => {
 };
 
 const validateStaffUpdate = (req, res, next) => {
-  const { salary, phoneNumber, email } = req.body;
+  const { salary, phone_number, email } = req.body;
 
   // Validasi salary
   if (salary !== undefined && (isNaN(salary) || salary < 0)) {
@@ -35,9 +35,9 @@ const validateStaffUpdate = (req, res, next) => {
   }
 
   // Validasi phoneNumber (gunakan regex Indonesia)
-  if (phoneNumber !== undefined) {
+  if (phone_number !== undefined) {
     const phoneNumberRegex = /^(\+62|0)[0-9]{8,15}$/;
-    if (!phoneNumberRegex.test(phoneNumber)) {
+    if (!phoneNumberRegex.test(phone_number)) {
       return res
         .status(400)
         .json({ error: "Format nomor telepon tidak valid." });

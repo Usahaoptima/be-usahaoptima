@@ -1,22 +1,33 @@
-const SalesModels = require("../../Models/scheme/Sales");
-const Product = require("../../Models/scheme/Product");
-const ReportModels = require("../../Models/scheme/Report");
+const SalesModels = require('../../Models/scheme/Sales');
+const Product = require('../../Models/scheme/Product');
+const ReportModels = require('../../Models/scheme/Report');
+const Midtrans = require('midtrans-client');
 
+let snap = new Midtrans.Snap({
+  isProduction: false,
+  serverKey: process.env.SERVERKEY,
+  clientKey: process.env.CLIENTKEY,
+});
 const CreateSales = async (req, res, next) => {
   const { sales_name, product_name, quantity, total_price } = req.body;
   const token = req.tokenUser.data;
   try {
-    // Cari ID produk berdasarkan nama produk
     const product = await Product.findOne({ product_name: product_name });
-
     if (!product) {
-      return res.status(400).json({
-        message: "Product not found",
-        statusText: "Product not found",
-        statusCode: 400,
+      return res.status(202).json({
+        message: 'Product not found',
+        statusText: 'Product not found',
+        statusCode: 202,
       });
     }
 
+    if (product.quantity < quantity) {
+      return res.status(202).json({
+        message: 'Stock Tidak Mencukupi',
+        statusText: 'Stock Tidak Mencukupi',
+        statusCode: 202,
+      });
+    }
     const createDataPassing = {
       sales_name: sales_name,
       product_name: product_name,
@@ -31,7 +42,7 @@ const CreateSales = async (req, res, next) => {
 
     const dataReport = {
       total_amount: createData.total_price,
-      criteria: "pemasukan",
+      criteria: 'pemasukan',
       create_at: new Date(),
       report_id: createData._id,
       business_id: token.business_id,
@@ -43,8 +54,8 @@ const CreateSales = async (req, res, next) => {
       res.status(400);
     } else {
       res.json({
-        message: "Successfull to create data sales",
-        statusText: "Successfull to create data sales",
+        message: 'Successfull to create data sales',
+        statusText: 'Successfull to create data sales',
         statusCode: 200,
         data: createData,
       });
@@ -52,8 +63,67 @@ const CreateSales = async (req, res, next) => {
   } catch (error) {
     console.error(error);
     res.status(500).json({
-      message: "Internal server error",
-      statusText: "Internal server error",
+      message: 'Internal server error',
+      statusText: 'Internal server error',
+      statusCode: 500,
+    });
+  }
+};
+
+const Payment = async (req, res, next) => {
+  const { product_name, quantity, total_price } = req.body;
+  const token = req.tokenUser.data;
+  try {
+    const product = await Product.findOne({ product_name: product_name });
+
+    if (!product) {
+      return res.status(202).json({
+        statusCode: 202,
+        message: 'Product not found',
+        statusText: 'Product not found',
+      });
+    }
+
+    if (product.quantity < quantity) {
+      return res.status(202).json({
+        statusCode: 202,
+        message: 'Stock Tidak Mencukupi',
+        statusText: 'Stock Tidak Mencukupi',
+      });
+    }
+
+    const midtransData = {
+      item_details: {
+        name: product_name,
+        quantity: quantity,
+        price: product.price,
+      },
+      transaction_details: {
+        order_id: Math.random() * 1000 + 1,
+        gross_amount: quantity * product.price,
+      },
+    };
+
+    const transaction = await snap.createTransactionToken(midtransData);
+    if (!transaction) {
+      return res.status(202).json({
+        statusCode: 202,
+        message: 'Failed to create transaction token',
+        statusText: 'Failed to create transaction token',
+      });
+    } else {
+      return res.status(200).json({
+        statusCode: 200,
+        message: 'Successfull to create payment token',
+        statusText: 'Successfull to create payment token',
+        transactionToken: transaction,
+      });
+    }
+  } catch (error) {
+    console.error(error);
+    res.status(500).json({
+      message: 'Internal server error',
+      statusText: 'Internal server error',
       statusCode: 500,
     });
   }
@@ -66,16 +136,16 @@ const GetSales = async (req, res, next) => {
       business_id: token.business_id,
     });
     res.send({
-      message: "Successfull to get data sales",
-      statusText: "Successfull to get data sales",
+      message: 'Successfull to get data sales',
+      statusText: 'Successfull to get data sales',
       statusCode: 200,
       data: getDataSales,
     });
   } catch (error) {
     console.error(error);
     res.status(500).json({
-      message: "Internal server error",
-      statusText: "Internal server error",
+      message: 'Internal server error',
+      statusText: 'Internal server error',
       statusCode: 500,
     });
   }
@@ -116,14 +186,14 @@ const UpdateSales = async (req, res, next) => {
 
     if (!updateSales && !updateReport) {
       res.status(404).json({
-        message: "Sales not found",
-        statusText: "Sales not found",
+        message: 'Sales not found',
+        statusText: 'Sales not found',
         statusCode: 404,
       });
     } else {
       res.send({
-        message: "Successfull to update data sales",
-        statusText: "Successfull to update data sales",
+        message: 'Successfull to update data sales',
+        statusText: 'Successfull to update data sales',
         statusCode: 200,
         data: updateSales,
       });
@@ -131,8 +201,8 @@ const UpdateSales = async (req, res, next) => {
   } catch (error) {
     console.error(error);
     res.status(500).json({
-      message: "Internal server error",
-      statusText: "Internal server error",
+      message: 'Internal server error',
+      statusText: 'Internal server error',
       statusCode: 500,
     });
   }
@@ -148,14 +218,14 @@ const DeleteSales = async (req, res, next) => {
     });
     if (!deleteSalesData && !deleteReportData) {
       res.status(404).json({
-        message: "Sales not found",
-        statusText: "Sales not found",
+        message: 'Sales not found',
+        statusText: 'Sales not found',
         statusCode: 404,
       });
     } else {
       res.send({
-        message: "Successfull to delete data sales",
-        statusText: "Successfull to delete data sales",
+        message: 'Successfull to delete data sales',
+        statusText: 'Successfull to delete data sales',
         statusCode: 200,
         data: deleteSalesData,
       });
@@ -163,8 +233,8 @@ const DeleteSales = async (req, res, next) => {
   } catch (error) {
     console.error(error);
     res.status(500).json({
-      message: "Internal server error",
-      statusText: "Internal server error",
+      message: 'Internal server error',
+      statusText: 'Internal server error',
       statusCode: 500,
     });
   }
@@ -175,4 +245,5 @@ module.exports = {
   GetSales,
   UpdateSales,
   DeleteSales,
+  Payment,
 };

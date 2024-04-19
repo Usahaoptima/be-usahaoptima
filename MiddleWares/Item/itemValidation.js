@@ -1,8 +1,8 @@
 const validateItemCreation = (req, res, next) => {
-  const { itemName, cost, quantity } = req.body;
+  const { item_name, cost, quantity } = req.body;
 
-  // Validasi itemName
-  if (!itemName || itemName.trim() === "") {
+  // Validasi item_name
+  if (!item_name || item_name.trim() === "") {
     return res.status(400).json({ error: "Nama item diperlukan." });
   }
 
