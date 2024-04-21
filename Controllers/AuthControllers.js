@@ -1,12 +1,12 @@
-const UsersModels = require("../Models/scheme/User");
-const BusinessesModels = require("../Models/scheme/Businesses");
-const TokenModels = require("../Models/scheme/Token");
-const SendEmail = require("../utils/sendEmail");
-const Cryptr = require("cryptr");
-const CryptrNew = new Cryptr("Ems1");
-const JWT = require("jsonwebtoken");
-const crypto = require("crypto");
-require("dotenv").config();
+const UsersModels = require('../Models/scheme/User');
+const BusinessesModels = require('../Models/scheme/Businesses');
+const TokenModels = require('../Models/scheme/Token');
+const SendEmail = require('../utils/sendEmail');
+const Cryptr = require('cryptr');
+const CryptrNew = new Cryptr('Ems1');
+const JWT = require('jsonwebtoken');
+const crypto = require('crypto');
+require('dotenv').config();
 
 async function Register(req, res, next) {
   const {
@@ -36,14 +36,14 @@ async function Register(req, res, next) {
       !business_description
     ) {
       res.status(401).send({
-        message: "Data tidak Komplit",
+        message: 'Data tidak Komplit',
         statusCode: 401,
       });
     }
 
     if (getBusiness) {
       res.status(401).send({
-        message: "Bisnis/Usaha Sudah Tersedia, Buat Usaha Baru!",
+        message: 'Bisnis/Usaha Sudah Tersedia, Buat Usaha Baru!',
         statusCode: 401,
       });
     } else {
@@ -58,14 +58,14 @@ async function Register(req, res, next) {
 
       if (!createdDataBusiness) {
         res.status(400).send({
-          message: "tidak bisa membuat usaha",
+          message: 'tidak bisa membuat usaha',
           statusCode: 400,
         });
       }
 
       if (getUser) {
         res.status(401).send({
-          message: "Akun Sudah Tersedia, Buat akun baru!",
+          message: 'Akun Sudah Tersedia, Buat akun baru!',
           statusCode: 401,
         });
       } else {
@@ -74,7 +74,7 @@ async function Register(req, res, next) {
           password: CryptrNew.encrypt(password),
           email: email,
           active: false,
-          role: "admin",
+          role: 'admin',
           business_id: createdDataBusiness._id,
           create_at: Date.now(),
         };
@@ -83,26 +83,32 @@ async function Register(req, res, next) {
 
         if (!createdData) {
           res.status(401).send({
-            message: "username atau password salah",
+            message: 'username atau password salah',
             statusCode: 401,
           });
         } else {
           const token = await new TokenModels({
             user_id: createdData._id,
-            token: crypto.randomBytes(32).toString("hex"),
+            token: crypto.randomBytes(32).toString('hex'),
           }).save();
 
           const url = `${process.env.BASE_URL}user/${createdData._id}/verify/${token.token}`;
 
           await SendEmail(
             createdData.email,
-            "Verifikasi Akun",
-            "Silahkan verifikasi akun anda",
-            `<h5>Hai Sobat Optima</h5> <br/> <p>Terimakasih telah memilih UsahaOptima sebagai aplikasi management bisnis anda<span>Yuk verifikasi akun anda</span></p> <a href="${url}">Verifikasi</a>`
+            'Verifikasi Akun',
+            'Silahkan verifikasi akun anda',
+            `<p>Hai Sobat Optima!,<br>Sebelum lanjut verifikasi email, konfirmasi detail akunmu dulu, yuk:</p>
+            <p>Username&nbsp;&nbsp;&nbsp;&nbsp;: ${username}<br>Email&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;: ${email}</p>
+            <p>Kalau semua detail di atas udah benar, tekan tombol di bawah buat verifikasi emailmu.</p>
+            <a href="${url}">Verifikasi email</a>
+            <p>Jika tombolnya bermasalah, klik link di bawah atau salin dan tempel ke browser kamu<br>${url}</p>
+            <p>Detail akunmu salah? Jangan verifikasi, lalu kamu bisa abaikan email ini.</p>
+            <p>Email ini dikirimkan secara otomatis. Mohon tidak membalas ke email ini.</p>`
           );
 
           res.status(201).send({
-            message: "Berhasil membuat user, verifikasi email terlebih dahulu",
+            message: 'Berhasil membuat user, verifikasi email terlebih dahulu',
             statusCode: 201,
             data: createdData,
           });
@@ -112,7 +118,7 @@ async function Register(req, res, next) {
   } catch (error) {
     console.log(error);
     res.status(500).send({
-      message: "ada yang salah",
+      message: 'ada yang salah',
       error: error,
       statusCode: 500,
     });
@@ -134,7 +140,7 @@ async function Login(req, res, next) {
 
     if (getUser.length < 1) {
       res.status(400).send({
-        message: "Username atau password belum terdaftar!",
+        message: 'Username atau password belum terdaftar!',
         statusCode: 400,
       });
     } else {
@@ -142,13 +148,13 @@ async function Login(req, res, next) {
 
       if (password !== passwordUser) {
         res.status(401).send({
-          message: "password atau username salah!",
+          message: 'password atau username salah!',
           statusCode: 401,
         });
       }
       if (getUser[0].active === false) {
         res.status(401).send({
-          message: "user tidak aktif silahkan verifikasi email!",
+          message: 'user tidak aktif silahkan verifikasi email!',
           statusCode: 401,
         });
       }
@@ -161,7 +167,7 @@ async function Login(req, res, next) {
             business_id: getUser[0].business_id,
           },
         },
-        "Ems1"
+        'Ems1'
       );
 
       let dataPassingClient = {
@@ -171,7 +177,7 @@ async function Login(req, res, next) {
       };
 
       res.status(200).send({
-        message: "berhasil login!",
+        message: 'berhasil login!',
         statusCode: 200,
         data: dataPassingClient,
       });
@@ -189,7 +195,7 @@ async function Verify(req, res, next) {
     const user = await UsersModels.findOne({ _id: id });
     if (!user) {
       return res.status(404).send({
-        message: "User Tidak Ditemukan",
+        message: 'User Tidak Ditemukan',
         statusCode: 404,
       });
     }
@@ -201,7 +207,7 @@ async function Verify(req, res, next) {
 
     if (!tokenData) {
       return res.status(404).send({
-        message: "Token Tidak Ditemukan",
+        message: 'Token Tidak Ditemukan',
         statusCode: 404,
       });
     }
@@ -212,13 +218,13 @@ async function Verify(req, res, next) {
     await TokenModels.deleteOne({ _id: tokenData._id });
 
     res.status(200).send({
-      message: "Akun Berhasil Verifikasi, silahkan login",
+      message: 'Akun Berhasil Verifikasi, silahkan login',
       statusCode: 200,
     });
   } catch (error) {
     console.log(error);
     res.status(400).send({
-      message: "ada yang salah",
+      message: 'ada yang salah',
       error: error,
       statusCode: 400,
     });
