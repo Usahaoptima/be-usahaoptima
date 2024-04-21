@@ -101,8 +101,8 @@ async function Register(req, res, next) {
             `<p>Hai Sobat Optima!,<br>Sebelum lanjut verifikasi email, konfirmasi detail akunmu dulu, yuk:</p>
             <p>Username&nbsp;&nbsp;&nbsp;&nbsp;: ${username}<br>Email&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;: ${email}</p>
             <p>Kalau semua detail di atas udah benar, tekan tombol di bawah buat verifikasi emailmu.</p>
-            <a href="${url}">Verifikasi email</a>
-            <p>Jika tombolnya bermasalah, klik link di bawah atau salin dan tempel ke browser kamu<br>${url}</p>
+            <a href="${url}" style="display: inline-block; width: 30px; height: 10px; background-color: #19A7CE; color: white; text-align: center; line-height: 10px; border-radius: 5px; text-decoration: none;">Verifikasi email</a>
+            <p>Jika tombolnya bermasalah, salin dan tempel link dibawah ini ke browser kamu<br>${url}</p>
             <p>Detail akunmu salah? Jangan verifikasi, lalu kamu bisa abaikan email ini.</p>
             <p>Email ini dikirimkan secara otomatis. Mohon tidak membalas ke email ini.</p>`
           );
