@@ -13,6 +13,9 @@ routes.get(
   [JWTMiddleware.verifyToken, JWTMiddleware.verifyJWTToken],
   SalesController.GetSales
 );
+
+routes.get('/report/:id', SalesController.GetReport);
+
 routes.post(
   '/',
   [JWTMiddleware.verifyToken, JWTMiddleware.verifyJWTToken],

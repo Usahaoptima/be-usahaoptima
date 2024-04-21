@@ -1,7 +1,14 @@
 const SalesModels = require('../../Models/scheme/Sales');
 const Product = require('../../Models/scheme/Product');
 const ReportModels = require('../../Models/scheme/Report');
+const PDFDocument = require('pdfkit');
+const ProductModels = require('../../Models/scheme/Product');
 const Midtrans = require('midtrans-client');
+
+const formatDate = (date) => {
+  const options = { day: '2-digit', month: '2-digit', year: 'numeric' };
+  return new Date(date).toLocaleDateString('id-ID', options); // Ubah 'id-ID' sesuai dengan locale yang diinginkan
+};
 
 let snap = new Midtrans.Snap({
   isProduction: false,
@@ -134,13 +141,68 @@ const GetSales = async (req, res, next) => {
   try {
     const getDataSales = await SalesModels.find({
       business_id: token.business_id,
-    });
+    }).sort({ created_date: -1 });
     res.send({
       message: 'Successfull to get data sales',
       statusText: 'Successfull to get data sales',
       statusCode: 200,
       data: getDataSales,
     });
+  } catch (error) {
+    console.error(error);
+    res.status(500).json({
+      message: 'Internal server error',
+      statusText: 'Internal server error',
+      statusCode: 500,
+    });
+  }
+};
+
+const GetReport = async (req, res) => {
+  const { id } = req.params;
+  // const token = req.tokenUser.data;
+  try {
+    const getDataSales = await SalesModels.find({
+      _id: id,
+    });
+    const getDataProduct = await ProductModels.find({
+      product_name: getDataSales[0].product_name,
+    });
+
+    let doc = new PDFDocument({ margin: 50 });
+
+    res.set({
+      'Content-Type': 'application/pdf',
+      'Content-Disposition': 'attachment; filename=invoice.pdf', // Opsional: menyertakan nama file
+    });
+
+    doc
+      .image('Controllers/Sales/usahaoptima.jpg', 50, 45, { width: 50 })
+      .fillColor('#444444')
+      .fontSize(20)
+      .text('Usaha Optima', 110, 57)
+      .fontSize(10)
+      .moveDown();
+
+    doc
+      .fontSize(20)
+      .text('Invoice', { align: 'center' })
+      .fillColor('#444444')
+      .moveDown()
+      .fontSize(14)
+      .text(`Nama Pembeli: ${getDataSales[0].sales_name}`)
+
+      .fontSize(14)
+      .text(`Tanggal: ${formatDate(getDataSales[0].created_date)}`)
+      .fontSize(14)
+      .text(`Quantity: ${getDataSales[0].quantity}`)
+      .fontSize(14)
+      .text(`Harga Barang: ${getDataProduct[0].price}`)
+      .fontSize(14)
+      .text(`Total Harga: ${getDataSales[0].total_price}`);
+
+    doc.end();
+    doc.pipe(res);
   } catch (error) {
     console.error(error);
     res.status(500).json({
@@ -246,4 +308,5 @@ module.exports = {
   UpdateSales,
   DeleteSales,
   Payment,
+  GetReport,
 };
