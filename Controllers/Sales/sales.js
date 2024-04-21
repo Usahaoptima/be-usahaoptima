@@ -191,15 +191,22 @@ const GetReport = async (req, res) => {
       .moveDown()
       .fontSize(14)
       .text(`Nama Pembeli: ${getDataSales[0].sales_name}`)
-
+      .moveDown()
       .fontSize(14)
       .text(`Tanggal: ${formatDate(getDataSales[0].created_date)}`)
+      .moveDown()
+      .fontSize(14)
+      .text(`Nama Barang: ${getDataSales[0].product_name}`)
+      .moveDown()
       .fontSize(14)
       .text(`Quantity: ${getDataSales[0].quantity}`)
+      .moveDown()
       .fontSize(14)
       .text(`Harga Barang: ${getDataProduct[0].price}`)
+      .moveDown()
       .fontSize(14)
-      .text(`Total Harga: ${getDataSales[0].total_price}`);
+      .text(`Total Harga: ${getDataSales[0].total_price}`)
+      .moveDown();
 
     doc.end();
     doc.pipe(res);
