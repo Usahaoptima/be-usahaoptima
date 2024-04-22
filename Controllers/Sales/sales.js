@@ -158,6 +158,28 @@ const GetSales = async (req, res, next) => {
   }
 };
 
+const GetSalesID = async (req, res, next) => {
+  const { id } = req.params;
+  try {
+    const getDataSales = await SalesModels.findOne({
+      _id: id,
+    });
+    res.send({
+      message: 'Successfull to get data sales',
+      statusText: 'Successfull to get data sales',
+      statusCode: 200,
+      data: getDataSales,
+    });
+  } catch (error) {
+    console.error(error);
+    res.status(500).json({
+      message: 'Internal server error',
+      statusText: 'Internal server error',
+      statusCode: 500,
+    });
+  }
+};
+
 const GetReport = async (req, res) => {
   const { id } = req.params;
   // const token = req.tokenUser.data;
@@ -312,6 +334,7 @@ const DeleteSales = async (req, res, next) => {
 module.exports = {
   CreateSales,
   GetSales,
+  GetSalesID,
   UpdateSales,
   DeleteSales,
   Payment,
