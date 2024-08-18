@@ -14,6 +14,7 @@ router.post(
     StaffMiddleware.validateStaffCreation,
     AuthMiddleware.verifyToken,
     AuthMiddleware.verifyJWTToken,
+    AuthMiddleware.authorize(["admin"]),
   ],
   StaffController.createStaffExpenses
 );
@@ -28,12 +29,17 @@ router.put(
     StaffMiddleware.validateStaffUpdate,
     AuthMiddleware.verifyToken,
     AuthMiddleware.verifyJWTToken,
+    AuthMiddleware.authorize(["admin"]),
   ],
   StaffController.updateStaffExpenses
 );
 router.delete(
   "/:id",
-  [AuthMiddleware.verifyToken, AuthMiddleware.verifyJWTToken],
+  [
+    AuthMiddleware.verifyToken,
+    AuthMiddleware.verifyJWTToken,
+    AuthMiddleware.authorize(["admin"]),
+  ],
   StaffController.deleteStaffExpenses
 );
 router.get(
