@@ -14,6 +14,7 @@ router.post(
     ExpensesMiddleware.validateExpensesCreation,
     AuthMiddleware.verifyToken,
     AuthMiddleware.verifyJWTToken,
+    AuthMiddleware.authorize(["admin"]),
   ],
   ExpensesController.createExpenses
 );
@@ -28,12 +29,17 @@ router.put(
     ExpensesMiddleware.validateExpensesUpdate,
     AuthMiddleware.verifyToken,
     AuthMiddleware.verifyJWTToken,
+    AuthMiddleware.authorize(["admin"]),
   ],
   ExpensesController.updateExpenses
 );
 router.delete(
   "/:id",
-  [AuthMiddleware.verifyToken, AuthMiddleware.verifyJWTToken],
+  [
+    AuthMiddleware.verifyToken,
+    AuthMiddleware.verifyJWTToken,
+    AuthMiddleware.authorize(["admin"]),
+  ],
   ExpensesController.deleteExpenses
 );
 router.get(

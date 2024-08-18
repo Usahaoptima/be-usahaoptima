@@ -159,6 +159,7 @@ async function Login(req, res, next) {
             user: getUser[0].username,
             user_id: getUser[0]._id,
             business_id: getUser[0].business_id,
+            role: getUser[0].role,
           },
         },
         "Ems1"

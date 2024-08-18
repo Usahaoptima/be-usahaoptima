@@ -38,7 +38,23 @@ function verifyJWTToken(req, res, next) {
   }
 }
 
+function authorize(roles = []) {
+  if (typeof roles === "string") {
+    roles = [roles];
+  }
+
+  return (req, res, next) => {
+    // Check if the user's role is authorized
+    if (!roles.includes(req.tokenUser.role)) {
+      return res.status(403).json({ message: "Access denied" });
+    }
+
+    next();
+  };
+}
+
 module.exports = {
   verifyToken,
   verifyJWTToken,
+  authorize,
 };

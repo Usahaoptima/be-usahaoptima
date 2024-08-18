@@ -14,6 +14,7 @@ router.post(
     ItemMiddleware.validateItemCreation,
     AuthMiddleware.verifyToken,
     AuthMiddleware.verifyJWTToken,
+    AuthMiddleware.authorize(["admin"]),
   ],
   ItemController.CreateItemExpenses
 );
@@ -28,12 +29,17 @@ router.put(
     ItemMiddleware.validateItemUpdate,
     AuthMiddleware.verifyToken,
     AuthMiddleware.verifyJWTToken,
+    AuthMiddleware.authorize(["admin"]),
   ],
   ItemController.UpdateItemExpenses
 );
 router.delete(
   "/:id",
-  [AuthMiddleware.verifyToken, AuthMiddleware.verifyJWTToken],
+  [
+    AuthMiddleware.verifyToken,
+    AuthMiddleware.verifyJWTToken,
+    AuthMiddleware.authorize(["admin"]),
+  ],
   ItemController.DeleteItemExpenses
 );
 

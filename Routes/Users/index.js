@@ -12,15 +12,26 @@ routes.get(
 
 routes.post(
   "/",
-  [UserMiddlewares.verifyToken, UserMiddlewares.verifyJWTToken],
+  [
+    UserMiddlewares.verifyToken,
+    UserMiddlewares.verifyJWTToken,
+    UserMiddlewares.authorize(["admin"]),
+  ],
   UsersController.userPost
 );
 
-routes.delete("/:id", UsersController.deleteUser);
+routes.delete("/:id", [
+  UsersController.deleteUser,
+  UserMiddlewares.authorize(["admin"]),
+]);
 
 routes.put(
   "/",
-  [UserMiddlewares.verifyToken, UserMiddlewares.verifyJWTToken],
+  [
+    UserMiddlewares.verifyToken,
+    UserMiddlewares.verifyJWTToken,
+    UserMiddlewares.authorize(["admin"]),
+  ],
   UsersController.UpdateUser
 );
 
