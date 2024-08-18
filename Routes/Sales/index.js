@@ -15,11 +15,21 @@ routes.get(
 );
 routes.post(
   "/",
-  [JWTMiddleware.verifyToken, JWTMiddleware.verifyJWTToken],
+  [
+    JWTMiddleware.verifyToken,
+    JWTMiddleware.verifyJWTToken,
+    JWTMiddleware.authorize(["admin", "karyawan"]),
+  ],
   SalesMiddleware.salesValidation,
   SalesController.CreateSales
 );
-routes.put("/:id", SalesController.UpdateSales);
-routes.delete("/:id", SalesController.DeleteSales);
+routes.put("/:id", [
+  SalesController.UpdateSales,
+  JWTMiddleware.authorize(["admin", "karyawan"]),
+]);
+routes.delete("/:id", [
+  SalesController.DeleteSales,
+  JWTMiddleware.authorize(["admin", "karyawan"]),
+]);
 
 module.exports = routes;

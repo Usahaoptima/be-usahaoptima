@@ -19,10 +19,17 @@ routes.post(
     ProductMiddleware.productValidation,
     JWTMiddleware.verifyToken,
     JWTMiddleware.verifyJWTToken,
+    JWTMiddleware.authorize(["admin"]),
   ],
   ProductController.CreateProduct
 );
-routes.put("/:id", ProductController.UpdateProduct);
-routes.delete("/:id", ProductController.DeleteProduct);
+routes.put("/:id", [
+  ProductController.UpdateProduct,
+  JWTMiddleware.authorize(["admin"]),
+]);
+routes.delete("/:id", [
+  ProductController.DeleteProduct,
+  JWTMiddleware.authorize(["admin"]),
+]);
 
 module.exports = routes;
